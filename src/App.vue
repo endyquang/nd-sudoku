@@ -1,28 +1,110 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <table>
+      <tr v-for="(row, i) in rows" :key="i" :class="{'border': i === 2 || i === 5}">
+        <td v-for="(x, j) in row" :key="`x-${j}`" :class="{'border': j === 2 || j === 5}">
+          <input v-model="rows[i][j]" @change="rows[i][j] = $event && $event > 0 && $event < 10 ? $event[0] : ''"/>
+        </td>
+      </tr>
+    </table>
+    <button @click="solve">SOLVE!</button>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
   name: 'app',
-  components: {
-    HelloWorld
+  data () {
+    const rows = []
+    for (let i = 0; i < 9; i ++) {
+      rows.push([])
+      for (let j = 0; j < 9; j ++) {
+        rows[i].push('')
+      }
+    }
+    return {
+      rows
+    }
+  },
+  methods: {
+    solve () {
+
+    }
   }
 }
 </script>
 
 <style>
+body {
+  margin: 0;
+}
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  background: #efefef;
+}
+table {
+  width: 420px;
+  height: 420px;
+  max-width: 420px;
+  background: #fff;
+  border-collapse: collapse;
+  box-shadow: 0 0 30px 0 rgba(0,0,0,.2);
+  border: 2px solid #555;
+  box-sizing: border-box;
+  margin-bottom: 40px;
+}
+tr, td {
+  box-sizing: border-box;
+}
+td {
+  border: 1px solid #ddd;
+  height: 30px;
+  width: 30px;
+  max-width: 30px;
+  max-height: 30px;
+  padding: 1px;
+}
+tr.border {
+  border-bottom: 2px solid #555;
+}
+td.border {
+  border-right: 2px solid #555;
+}
+input {
+  border: none;
+  width: 43px;
+  height: 28px;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  font-size: 20px;
+  font-weight: bold;
+}
+input:focus, button:focus {
+  outline: none;
+}
+button {
+  height: 40px;
+  width: 200px;
+  background: #5167d9;
+  border: 0;
+  font-size: 20px;
+  line-height: 30px;
+  cursor: pointer;
+  color: #fff;
+  box-shadow: 3px 3px 20px 0 rgba(0,0,0,.2);
+  border-radius: 4px;
+  letter-spacing: 2px;
+  font-weight: 600;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  transition: .4s;
+}
+button:hover {
+  background: #7285e8;
+}
+button:active {
+  transform: translate(0, 6px);
 }
 </style>
