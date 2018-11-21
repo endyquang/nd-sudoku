@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <button style="margin-left:auto; margin-bottom: 8px;" @click="restart">Restart</button>
     <table>
       <tr v-for="(row, i) in rows" :key="i" :class="{'border': i === 2 || i === 5}">
         <td v-for="(x, j) in row" :key="`x-${j}`" :class="{'border': j === 2 || j === 5}">
@@ -15,18 +16,88 @@
 export default {
   name: 'app',
   data () {
-    const rows = []
-    for (let i = 0; i < 9; i ++) {
-      rows.push([])
-      for (let j = 0; j < 9; j ++) {
-        rows[i].push('')
-      }
-    }
     return {
-      rows
+      rows: this.generateEmptyRows('')
     }
   },
   methods: {
+    restart () {
+      const output = Array.from({length: 81}, () => '')
+      const possibilities = Array.from({length: 81}, () => Array.from({length: 9}, () => 1))
+      const relevances = Array.from({length: 81}, (c, i) => _getRelevantCells(i))
+      _findCell()
+      // console.log(relevances, possibilities)
+      const rows = this.generateEmptyRows('')
+      output.forEach((cell, i) => {
+        const {x, y} = _indexToCoord(i)
+        rows[x][y] = cell
+      })
+      this.rows = rows
+      function _findCell (index = 0) {
+        if (index === 81) return
+        // console.log('-- ' + (index > 9 ? '' : '0') + index + ' --')
+        const vals = []
+        possibilities[index].forEach((p, i) => {
+          if (p > 0) vals.push(i)
+        })
+        // console.log(vals)
+        if (!vals.length) return - 1
+        const selected = vals[Math.floor(Math.random() * vals.length)]
+        // console.log(selected + 1)
+        output[index] = selected + 1
+        _updateRelevantPossibilities(index, selected, -1)
+        if (_findCell(index + 1) === -1) {
+          possibilities[index][selected]--
+          output[index] = ''
+          _updateRelevantPossibilities(index, selected, 1)
+          return _findCell(index)
+        }
+      }
+      function _updateRelevantPossibilities (i, number, change = -1) {
+        relevances[i].forEach(cellIndex => {
+          possibilities[cellIndex][number] += change
+        })
+      }
+      function _getRelevantCells (i) {
+        const output = []
+        const {x, y} = _indexToCoord(i)
+        const NEXT_ROW = y + 1
+        const MAX_ROW = y + 3 - y % 3
+        const MIN_COL = x - x % 3
+        const MAX_COL = x + 3 - x % 3
+        for (let row = NEXT_ROW; row < MAX_ROW; row++) {
+          for (let col = MIN_COL; col < MAX_COL; col++) {
+            output.push(_coordToIndex(col, row))
+          }
+        }
+        for (let curI = i + 1; curI < i + 9 - i % 9; curI++) {
+          output.push(curI)
+        }
+        for (let curI = i + MAX_ROW * 9; curI < 81; curI += 9) {
+          output.push(curI)
+        }
+        return output
+      }
+      function _indexToCoord (i) {
+        return {
+          x: i % 9,
+          y: Math.floor(i / 9)
+        }
+      }
+      function _coordToIndex (x, y) {
+        return y * 9 + x
+      }
+    },
+    generateEmptyRows (defVal) {
+      const rows = []
+      for (let i = 0; i < 9; i ++) {
+        rows.push([])
+        for (let j = 0; j < 9; j ++) {
+          rows[i].push(typeof defVal === 'function' ? defVal() : defVal)
+        }
+      }
+      return rows
+    },
     solve () {
 
     }
@@ -66,7 +137,7 @@ td {
   width: 30px;
   max-width: 30px;
   max-height: 30px;
-  padding: 1px;
+  padding: 0;
 }
 tr.border {
   border-bottom: 2px solid #555;
@@ -76,14 +147,18 @@ td.border {
 }
 input {
   border: none;
-  width: 43px;
-  height: 28px;
+  height: 100%;
+  width: 100%;
   text-align: center;
   font-size: 20px;
   font-weight: bold;
+  transition: .1s;
 }
 input:focus, button:focus {
   outline: none;
+}
+input:focus {
+  background: #efefef;
 }
 button {
   height: 40px;
