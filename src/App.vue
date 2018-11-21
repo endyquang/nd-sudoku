@@ -38,27 +38,30 @@ export default {
       })
       this.rows = rows
 
-      function _findCell (index = 0, temp = []) {
+      function _findCell (index = 0) {
         if (index === 81) return
+
         const vals = []
         possibilities[index].forEach((p, i) => {
-          if (p > 0) vals.push(i)
+          if (p === 1) vals.push(i)
         })
         if (!vals.length) {
-          temp.forEach(t => {
-            possibilities[index][t]++
+          possibilities[index].forEach((p, i) => {
+            if (p === 2) possibilities[index][i] = 1
           })
           return -1
         }
-        if (!temp.length) temp = vals
+
         const selected = vals[Math.floor(Math.random() * vals.length)]
-        output[index] = selected + 1
+
         _updateRelevantPossibilities(index, selected, -1)
+
         if (_findCell(index + 1) === -1) {
-          possibilities[index][selected]--
-          output[index] = ''
+          possibilities[index][selected] = 2
           _updateRelevantPossibilities(index, selected, 1)
-          return _findCell(index, temp)
+          return _findCell(index)
+        } else {
+          output[index] = selected + 1
         }
       }
       function _updateRelevantPossibilities (i, number, change = -1) {
