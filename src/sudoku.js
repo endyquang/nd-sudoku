@@ -1,14 +1,16 @@
 
 // NO COMMENT
 
-function generate () {
+const BLOCKS_INDEXES = _makeBlocks()
+
+function generate (difficulty) {
   const output = _makeArr81(() => '')
   const possibilities = _makeArr81(() => Array.from({length: 9}, () => 1))
   const relevances =  _makeArr81((c, i) => _getRelevantCells(i))
 
   _findCell()
 
-  return make2DimensionsArr(output)
+  return make2DimensionsArr(_trimOutput(output, difficulty))
 
   function _findCell (index = 0) {
     if (index === 81) return
@@ -24,7 +26,7 @@ function generate () {
       return -1
     }
 
-    const selected = vals[Math.floor(Math.random() * vals.length)]
+    const selected = _getRandomElm(vals)
 
     _updateRelevantPossibilities(index, selected, -1)
 
@@ -88,6 +90,54 @@ function _indexToCoord (i) {
 }
 function _coordToIndex (x, y) {
   return y * 9 + x
+}
+
+function _trimOutput (output, difficulty) {
+  const cases = {
+    hardest: [
+      [4, 4, 4, 4, 2, 2, 2, 2, 2],
+      [3, 3, 4, 4, 4, 2, 2, 2, 2],
+      [3, 3, 3, 3, 4, 4, 2, 2, 2],
+      [3, 3, 3, 3, 3, 3, 4, 2, 2],
+      [3, 3, 3, 3, 3, 3, 3, 3, 2]
+    ],
+    easy: []
+  }[difficulty]
+  const blockDistributions = _shuffle(_getRandomElm(cases))
+  blockDistributions.forEach((total, blockNo) => {
+    const cells = BLOCKS_INDEXES[blockNo].slice()
+    for (let i = 0; i < 9 - total; i++) {
+      output[cells.splice(_getRandomIndex(cells), 1)[0]] = ''
+    }
+  })
+  return output
+}
+
+function _getRandomElm (arr = []) {
+  return arr[_getRandomIndex(arr)]
+}
+
+function _getRandomIndex (arr = []) {
+  return Math.floor(Math.random() * arr.length)
+}
+
+function _shuffle (arr) {
+  const src = [...arr]
+  const output = []
+  for (let i = 0; i < 9; i++) {
+    output.push(src.splice(_getRandomIndex(src), 1)[0])
+  }
+  return output
+}
+
+function _makeBlocks () {
+  return Array.from({length: 9}, (c, i) => {
+    const start = i % 3 * 3 + Math.floor(i / 3) * 27
+    return Array.from({length: 9}, (c, j) => {
+      const n = j % 3 + (Math.floor(j / 3)) * 9
+      return start + n
+    })
+  })
 }
 
 export default {

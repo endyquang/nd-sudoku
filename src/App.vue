@@ -18,12 +18,13 @@ export default {
   name: 'app',
   data () {
     return {
-      rows: sudoku.generate()
+      rows: sudoku.generate('hardest'),
+      difficulty: 'hardest'
     }
   },
   methods: {
     restart () {
-      this.rows = sudoku.generate()
+      this.rows = sudoku.generate(this.difficulty)
     },
     solve () {
 
