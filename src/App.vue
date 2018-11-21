@@ -21,36 +21,43 @@ export default {
     }
   },
   methods: {
+    makeArr81 (func) {
+      return Array.from({length: 81}, func)
+    },
     restart () {
-      const output = Array.from({length: 81}, () => '')
-      const possibilities = Array.from({length: 81}, () => Array.from({length: 9}, () => 1))
-      const relevances = Array.from({length: 81}, (c, i) => _getRelevantCells(i))
+      const output = this.makeArr81(() => '')
+      const possibilities = this.makeArr81(() => Array.from({length: 9}, () => 1))
+      const relevances =  this.makeArr81((c, i) => _getRelevantCells(i))
+
       _findCell()
-      // console.log(relevances, possibilities)
+
       const rows = this.generateEmptyRows('')
       output.forEach((cell, i) => {
         const {x, y} = _indexToCoord(i)
         rows[x][y] = cell
       })
       this.rows = rows
-      function _findCell (index = 0) {
+
+      function _findCell (index = 0, temp = []) {
         if (index === 81) return
-        // console.log('-- ' + (index > 9 ? '' : '0') + index + ' --')
         const vals = []
         possibilities[index].forEach((p, i) => {
           if (p > 0) vals.push(i)
         })
-        // console.log(vals)
-        if (!vals.length) return - 1
+        if (!vals.length) return temp
+        if (!temp.length) temp = vals
         const selected = vals[Math.floor(Math.random() * vals.length)]
-        // console.log(selected + 1)
         output[index] = selected + 1
         _updateRelevantPossibilities(index, selected, -1)
-        if (_findCell(index + 1) === -1) {
+        const returnedTemp = _findCell(index + 1)
+        if (Array.isArray(returnedTemp)) {
+          returnedTemp.forEach(t => {
+            possibilities[index + 1][t]++
+          })
           possibilities[index][selected]--
           output[index] = ''
           _updateRelevantPossibilities(index, selected, 1)
-          return _findCell(index)
+          return _findCell(index, temp)
         }
       }
       function _updateRelevantPossibilities (i, number, change = -1) {
@@ -65,15 +72,15 @@ export default {
         const MAX_ROW = y + 3 - y % 3
         const MIN_COL = x - x % 3
         const MAX_COL = x + 3 - x % 3
+        for (let curI = i + 1; curI < i + 9 - i % 9; curI++) {
+          output.push(curI)
+        }
         for (let row = NEXT_ROW; row < MAX_ROW; row++) {
           for (let col = MIN_COL; col < MAX_COL; col++) {
             output.push(_coordToIndex(col, row))
           }
         }
-        for (let curI = i + 1; curI < i + 9 - i % 9; curI++) {
-          output.push(curI)
-        }
-        for (let curI = i + MAX_ROW * 9; curI < 81; curI += 9) {
+        for (let curI = i % 9 + MAX_ROW * 9; curI < 81; curI += 9) {
           output.push(curI)
         }
         return output
