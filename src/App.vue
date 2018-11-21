@@ -44,16 +44,17 @@ export default {
         possibilities[index].forEach((p, i) => {
           if (p > 0) vals.push(i)
         })
-        if (!vals.length) return temp
+        if (!vals.length) {
+          temp.forEach(t => {
+            possibilities[index][t]++
+          })
+          return -1
+        }
         if (!temp.length) temp = vals
         const selected = vals[Math.floor(Math.random() * vals.length)]
         output[index] = selected + 1
         _updateRelevantPossibilities(index, selected, -1)
-        const returnedTemp = _findCell(index + 1)
-        if (Array.isArray(returnedTemp)) {
-          returnedTemp.forEach(t => {
-            possibilities[index + 1][t]++
-          })
+        if (_findCell(index + 1) === -1) {
           possibilities[index][selected]--
           output[index] = ''
           _updateRelevantPossibilities(index, selected, 1)
