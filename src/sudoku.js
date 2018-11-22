@@ -93,24 +93,35 @@ function _coordToIndex (x, y) {
 }
 
 function _trimOutput (output, difficulty) {
+  const n = {
+    hardest: 26,
+    easy: 41
+  }[difficulty]
+  const blockDistributions = _distributeToBlocks(n)
+  blockDistributions.forEach((total, blockNo) => {
+    const cells = BLOCKS_INDEXES[blockNo].slice()
+    for (let i = 0; i < 9 - total; i++) {
+      output[_spliceRandomElm(cells)] = ''
+    }
+  })
+  return output
+}
+
+function _distributeToBlocks (n) {
   const cases = {
-    hardest: [
+    26: [
       [4, 4, 4, 4, 2, 2, 2, 2, 2],
       [3, 3, 4, 4, 4, 2, 2, 2, 2],
       [3, 3, 3, 3, 4, 4, 2, 2, 2],
       [3, 3, 3, 3, 3, 3, 4, 2, 2],
       [3, 3, 3, 3, 3, 3, 3, 3, 2]
-    ],
-    easy: []
-  }[difficulty]
-  const blockDistributions = _shuffle(_getRandomElm(cases))
-  blockDistributions.forEach((total, blockNo) => {
-    const cells = BLOCKS_INDEXES[blockNo].slice()
-    for (let i = 0; i < 9 - total; i++) {
-      output[cells.splice(_getRandomIndex(cells), 1)[0]] = ''
-    }
-  })
-  return output
+    ]
+  }[n]
+  return _shuffle(_getRandomElm(cases))
+}
+
+function _spliceRandomElm (arr) {
+  return arr.splice(_getRandomIndex(arr), 1)[0]
 }
 
 function _getRandomElm (arr = []) {
@@ -125,7 +136,7 @@ function _shuffle (arr) {
   const src = [...arr]
   const output = []
   for (let i = 0; i < 9; i++) {
-    output.push(src.splice(_getRandomIndex(src), 1)[0])
+    output.push(_spliceRandomElm(src))
   }
   return output
 }

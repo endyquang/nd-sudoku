@@ -1,14 +1,26 @@
 <template>
   <div id="app">
-    <button style="margin-left:auto; margin-bottom: 8px;" @click="restart">Restart</button>
-    <table>
-      <tr v-for="(row, i) in rows" :key="i" :class="{'border': i === 2 || i === 5}">
-        <td v-for="(x, j) in row" :key="`x-${j}`" :class="{'border': j === 2 || j === 5}">
-          <input v-model="rows[i][j]" @change="rows[i][j] = $event && $event > 0 && $event < 10 ? $event[0] : ''"/>
-        </td>
-      </tr>
-    </table>
-    <button @click="solve">SOLVE!</button>
+    <header class="header">
+      <button @click="clear">S</button>
+      <button @click="clear">P</button>
+      <div class="logo">
+        <span>NDQ</span>
+      </div>
+      <button @click="clear">C</button>
+      <button @click="restart">R</button>
+    </header>
+    <main class="main">
+      <table>
+        <tr v-for="(row, i) in rows" :key="i" :class="{'border': i === 2 || i === 5}">
+          <td v-for="(x, j) in row" :key="`x-${j}`" :class="{'border': j === 2 || j === 5}">
+            {{rows[i][j]}}
+          </td>
+        </tr>
+      </table>
+    </main>
+    <footer class="footer">
+
+    </footer>
   </div>
 </template>
 
@@ -26,7 +38,7 @@ export default {
     restart () {
       this.rows = sudoku.generate(this.difficulty)
     },
-    solve () {
+    clear () {
 
     }
   }
@@ -37,41 +49,87 @@ export default {
 body {
   margin: 0;
 }
+div, .main, .header, table, tr, td {
+  box-sizing: border-box;
+}
 #app {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  background: #efefef;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+.header {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: flex-end;
+}
+.logo {
+  flex-grow: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  line-height: 20px;
+  color: #888;
+  letter-spacing: 1px;
+}
+.logo span {
+  background: #eee;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+.header button {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+.footer {
+  flex-grow: 1;
+  margin-top: 30px;
+}
+.footer, .header {
+  box-shadow: 0 0 10px -1px rgba(0,0,0,.2);
+  min-height: 60px;
+  background: #f8f8f8;
+  padding: 10px 16px;
+}
+.main {
+  display: flex;
+  justify-content: flex-start;
   flex-direction: column;
   align-items: center;
-  height: 100vh;
-  background: #efefef;
 }
 table {
-  width: 420px;
-  height: 420px;
-  max-width: 420px;
-  background: #fff;
+  width: 320px;
+  height: 320px;
+  max-width: 320px;
+  background: #f8f8f8;
   border-collapse: collapse;
-  box-shadow: 0 0 30px 0 rgba(0,0,0,.2);
-  border: 2px solid #555;
+  box-shadow: 0 0 10px 0 rgba(0,0,0,.1);
+  border: 2px solid #666;
   box-sizing: border-box;
-  margin-bottom: 40px;
 }
 tr, td {
   box-sizing: border-box;
 }
 td {
   border: 1px solid #ddd;
-  height: 30px;
-  width: 30px;
-  max-width: 30px;
-  max-height: 30px;
   padding: 0;
+  font-size: 24px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  color: #444;
 }
 tr.border {
-  border-bottom: 2px solid #555;
+  border-bottom: 2px solid #666;
 }
 td.border {
-  border-right: 2px solid #555;
+  border-right: 2px solid #666;
 }
 input {
   border: none;
@@ -90,24 +148,21 @@ input:focus {
 }
 button {
   height: 40px;
-  width: 200px;
-  background: #5167d9;
+  width: 40px;
+  background: transparent;
   border: 0;
-  font-size: 20px;
-  line-height: 30px;
+  font-size: 22px;
+  line-height: 40px;
   cursor: pointer;
-  color: #fff;
-  box-shadow: 3px 3px 20px 0 rgba(0,0,0,.2);
+  color: #666;
   border-radius: 4px;
-  letter-spacing: 2px;
-  font-weight: 600;
-  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-weight: 500;
   transition: .4s;
 }
 button:hover {
-  background: #7285e8;
+  color: #333;
 }
 button:active {
-  transform: translate(0, 6px);
+  transform: translate(0, 3px);
 }
 </style>
