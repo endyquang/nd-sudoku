@@ -32,6 +32,12 @@ div, .main, .header, table, tr, td {
   font-size: 13px;
   position: relative;
 }
+.header .header__btn__icon {
+  position: absolute;
+  top: 10px;
+  right: -16px;
+  color: #aaa;
+}
 .footer {
   flex-grow: 1;
   margin-top: 30px;
@@ -266,3 +272,28 @@ div, .main, .header, table, tr, td {
 .number .primary {
   color: #2b9c48;
 }
+
+/* ICON */
+.ico__play, .ico__pause {
+  vertical-align: middle;
+  display: inline-block;
+  background: transparent;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  border-color: transparent transparent transparent #777;
+}
+.ico--xl.ico__play {
+  width: 32px;
+  height: 48px;
+  border-width: 24px 0 24px 32px;
+}
+.ico__play {
+  border-style: solid;
+  border-width: 6px 0 6px 9px;
+}
+.ico__pause {
+  border-style: double;
+  border-width: 0px 0 0px 8px;
+}
+

@@ -6,23 +6,23 @@
       </div>
       <template v-if="won">
         <div class="pending__noti" v-if="won">YOU'VE LUCKYLY WON!</div>
-        <div class="pending__score"></div>
       </template>
       <div class="pending__noti" v-else-if="lost">YOU DUMBASS LOSER!</div>
       <div class="pending__subtitle" v-else>Just a dummy text to make it look not as empty as its creator</div>
+      <div class="pending__score"></div>
       <base-btn @click="start" class="pending__start">PLAY {{won || lost ? 'AGAIN' : 'NOW'}}</base-btn>
     </div>
     <header class="header">
       <span>Mistakes: {{mistakes}}/3</span>
       <base-btn @click="togglePaused">
-        {{time | prettifyTime}} <span style="color: #aaa;">{{paused ? '&#10074;&#10074;' : '&#9654;'}}</span>
+        {{time | prettifyTime}} <i class="header__btn__icon" :class="[paused ? 'ico__pause' : 'ico__play']"></i>
       </base-btn>
       <base-btn @click="start">New Game</base-btn>
     </header>
     <main class="main">
       <div class="paused" v-if="paused">
         <div class="paused__content">
-          <base-btn @click="togglePaused">&#9654;</base-btn>
+          <base-btn @click="togglePaused"><i class="ico__play ico--xl" /></base-btn>
         </div>
       </div>
       <div class="play" :class="{'play--paused': paused}">
@@ -225,6 +225,7 @@ export default {
       if (!this.multiple) {
         this.actives = Array.from({length: 81}, () => false)
       }
+      if (!this.active.value) this.active = -1
     },
     onActiveChange (cell) {
       if (this.multiple && !cell.value) {
