@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" @touchmove="preventDefault">
     <div class="pending" v-if="pending">
       <div class="pending__logo">
         NUDOKU
@@ -139,6 +139,7 @@ export default {
   },
   methods: {
     start () {
+      if (this.time > 0) this.stopTimer()
       const {blocks, answer, trimmedAnswer} = sudoku.generate('hardest')
       this.blocks = blocks
       this.answer = answer
@@ -231,6 +232,9 @@ export default {
       } else {
         this.active = cell
       }
+    },
+    preventDefault (e) {
+      e.preventDefault()
     }
   },
   filters: {
