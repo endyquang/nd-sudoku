@@ -1,6 +1,7 @@
 
 // NO COMMENT
 
+const ADDRESSES = _makeAddresses()
 const BLOCKS_INDEXES = _makeBlockIndexes()
 const AFFTECEDS = _makeArr81((c, i) => _getAffectedCells(i))
 const CORRECTS_QUANTITY = {
@@ -19,8 +20,7 @@ function generate (difficulty) {
   return {
     answer,
     trimmedAnswer,
-    blocks: _makeBlocks(trimmedAnswer),
-    corrects: CORRECTS_QUANTITY[difficulty]
+    blocks: _makeBlocks(trimmedAnswer)
   }
 
   function _findCell (index = 0) {
@@ -90,6 +90,11 @@ function _indexToCoord (i) {
 function _coordToIndex (x, y) {
   return y * 9 + x
 }
+function _indexToBlock (x, y) {
+  const i = Math.floor(x / 3)
+  const j = Math.floor(y / 3)
+  return j * 3 + i
+}
 
 function _trimOutput (output, difficulty) {
   const n = CORRECTS_QUANTITY[difficulty]
@@ -147,24 +152,24 @@ function _makeBlockIndexes () {
   })
 }
 
+function _makeAddresses () {
+  return Array.from({length: 81}, (cell, i) => {
+    const {x: col, y: row} = _indexToCoord(i)
+    const block = _indexToBlock(col, row)
+    return {row, col, block}
+  })
+}
+
 function _makeBlocks (output) {
-  const blocks = []
-  BLOCKS_INDEXES.forEach((blockIndexes, i) => {
-    blocks.push([])
-    blockIndexes.forEach(cellIndex => {
-      const {x, y} = _indexToCoord(cellIndex)
-      blocks[i].push({
-        id: cellIndex,
-        value: output[cellIndex],
-        row: y,
-        col: x,
-        block: i
-      })
-    })
+  const blocks = Array.from({length: 9}, () => [])
+  output.forEach((value, id) => {
+    const {row, col, block} = ADDRESSES[id]
+    blocks[block].push({value, id, row, col})
   })
   return blocks
 }
 
 export default {
-  generate
+  generate,
+  addresses: ADDRESSES
 }

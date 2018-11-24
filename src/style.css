@@ -4,8 +4,8 @@ html {
 body, html {
   margin: 0;
   background: #efefef;
-  height: 100vh;
-  max-height: 100vh;
+  height: 100%;
+  max-height: 100%;
   overflow: hidden;
 }
 div, .main, .header, table, tr, td {
@@ -36,14 +36,10 @@ div, .main, .header, table, tr, td {
   position: absolute;
   top: 10px;
   right: -16px;
-  color: #aaa;
+  border-color: transparent transparent transparent #aaa;
 }
-.footer {
-  flex-grow: 1;
-  margin-top: 30px;
-}
-.footer, .header {
-  padding: 8px 0;
+.header {
+  padding: 10px 2px;
 }
 .main {
   position: relative;
@@ -54,7 +50,7 @@ div, .main, .header, table, tr, td {
   padding: 2px;
   grid-gap: 2px;
   background-color: #777;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   position: relative;
 }
 .paused {
@@ -190,6 +186,7 @@ div, .main, .header, table, tr, td {
   text-align: center;
   align-items: center;
   padding: 8px;
+  height: 100%;
 }
 .pending__logo {
   background: #cdcdcd;
@@ -262,7 +259,16 @@ div, .main, .header, table, tr, td {
 
 /* CONTROLS */
 .controls {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  grid-template-columns: repeat(4, 1fr);
+}
+.controls .base__btn {
+  height: auto;
+  font-size: 13px;
+}
+.controls .base__btn div {
+  margin-bottom: 4px;
+  font-size: 20px;
 }
 .base__btn.primary {
   color: #2b9c48;

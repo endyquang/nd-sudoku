@@ -1,5 +1,5 @@
 <template>
-  <div id="app" @touchmove="preventDefault">
+  <div id="app" @touchmove="$event.preventDefault()">
     <div class="pending" v-if="pending">
       <div class="pending__logo">
         NUDOKU
@@ -64,9 +64,10 @@
       </div>
 
       <div class="controls">
-        <base-btn @click="noting = !noting" :class="{'primary': noting}">&#9998; Note {{noting ? 'On' : 'Off'}}</base-btn>
-        <base-btn @click="erase">&#10008; Erase</base-btn>
-        <base-btn @click="onMultipleChange" :class="{'primary': multiple}">&#9964; Multiple</base-btn>
+        <base-btn @click="noting = !noting" :class="{'primary': noting}"><div>&#9998;</div> Note</base-btn>
+        <base-btn @click="undo"><div>&#9100;</div> Undo</base-btn>
+        <base-btn @click="erase"><div>&#10008;</div> Erase</base-btn>
+        <base-btn @click="onMultipleChange" :class="{'primary': multiple}"><div>&#9783;</div> Multiple</base-btn>
       </div>
 
       <div class="number">
@@ -83,7 +84,7 @@
 </template>
 
 <script>
-import sudoku from './sudoku'
+import SUDOKU from './sudoku'
 import BaseBtn from '@/atoms/BaseBtn'
 
 function _getHms (seconds = 0) {
@@ -117,12 +118,19 @@ export default {
       lost: false,
       paused: false,
       multiple: false,
-      timer: null
+      timer: null,
+      corrects: 0,
+      histories: [],
+      tempHistory: {}
     }
   },
   computed: {
     notesState () {
-      return this.notes.map(note => note.filter(n => n > 0).length)
+      return this.notes.map(note => {
+        for (let n of note) {
+          if (n > 0) return true
+        }
+      })
     },
     filledNumbers () {
       const filleds = Array.from({length: 9}, () => 0)
@@ -130,28 +138,26 @@ export default {
         if (a > 0) filleds[a - 1]++
       })
       return filleds
-    },
-    corrects () {
-      const c = 0
-      const answer = this.answer
-      return this.temps.filter((temp, i) => temp === answer[i]).length
     }
   },
   methods: {
     start () {
       if (this.time > 0) this.stopTimer()
-      const {blocks, answer, trimmedAnswer} = sudoku.generate('hardest')
+      const {blocks, answer, trimmedAnswer} = SUDOKU.generate('hardest')
       this.blocks = blocks
       this.answer = answer
       this.temps = trimmedAnswer
+      this.notes = Array.from({length: 81}, () => Array.from({length: 9}, () => 0))
+      this.corrects = trimmedAnswer.filter(Boolean).length
       this.mistakes = 0
       this.time = 0
       this.active = -1
       this.pending = false
       this.multiple = false
       this.timer = null
+      this.histories = []
+      this.tempHistory = {notes: [], temps: []}
       this.actives = Array.from({length: 81}, () => false)
-      this.notes = Array.from({length: 81}, () => Array.from({length: 9}, (n, i) => -(i + 1)))
       this.startTimer()
     },
     startTimer () {
@@ -160,72 +166,104 @@ export default {
     stopTimer () {
       clearInterval(this.timer)
     },
-    newTemp (n) {
-      if (this.paused) return
-      const indexes = []
-      if (this.multiple) {
-        this.actives.forEach((active, i) => {
-          if (active) indexes.push(i)
-        })
-      } else if (this.active.id && !this.active.value) {
-        indexes.push(this.active.id)
-      } else {
-        return
-      }
-      indexes.forEach(i => {
+    pushHistory () {
+      // UNDO MAXIMUM 50 TIMES
+      this.histories.push(this.tempHistory)
+      if (this.histories.length > 50) this.histories.splice(0, 1)
+      this.tempHistory = {notes: [], temps: []}
+    },
+    newTemp (value) {
+      this.getActiveIndexes(i => {
         if (this.noting) {
-          this.notes[i].splice(n - 1, 1, -this.notes[i][n - 1])
-          if (this.temps[i]) this.temps.splice(i, 1, '')
+          const numberIndex = value - 1
+          const oldVal = this.notes[i][numberIndex]
+          this.tempHistory.notes.push({cellIndex: i, numberIndex, value: oldVal})
+          this.notes[i].splice(numberIndex, 1, oldVal > 0 ? 0 : value)
+          return this.resetTemp(i)
+        }
+
+        this.resetNote(i)
+        if (this.temps[i] === value) {
+          this.resetTemp(i)
         } else {
-          if (this.notesState[i]) {
-            this.resetNote(i)
+          this.tempHistory.temps.push({cellIndex: i, value: this.temps[i]})
+          this.temps.splice(i, 1, value)
+          this.clearRelevantNotes(i, value)
+          if (value === this.answer[i]) {
+            if (++this.corrects === 81) this.win()
+          } else if (++this.mistakes === 3) {
+            this.gameOver()
           }
-          this.temps.splice(i, 1, this.temps[i] === n ? '' : n)
-          if (this.temps[i] && n !== this.answer[i]) {
-            this.mistakes++
-            if (this.mistakes === 3) {
-              this.gameOver()
-            }
-          } else if (this.corrects === 81) {
-            this.win()
-          }
+        }
+      })
+      this.pushHistory()
+    },
+    clearRelevantNotes (cellId, number) {
+      const {row, col, block} = SUDOKU.addresses[cellId]
+      this.blocks[block].forEach(cell => this.removeNoteItem(cell.id, number))
+      this.notes.forEach((note, i) => {
+        if (row === SUDOKU.addresses[i].row || col === SUDOKU.addresses[i].col) {
+          this.removeNoteItem(i, number)
         }
       })
     },
     erase () {
-      if (this.active.value) return
-      const i = this.active.id
-      if (this.notesState[i]) {
+      this.getActiveIndexes(i => {
         this.resetNote(i)
+        this.resetTemp(i)
+      })
+      this.pushHistory()
+    },
+    undo () {
+      const {notes = [], temps = []} = this.histories.pop() || {}
+      notes.forEach(({cellIndex, numberIndex, value}) => {
+        if (numberIndex > -1) {
+          this.notes[cellIndex].splice(numberIndex, 1, value)
+        } else {
+          this.notes.splice(cellIndex, 1, value)
+        }
+      })
+      temps.forEach(({cellIndex, value}) => {
+        this.temps.splice(cellIndex, 1, value)
+      })
+    },
+    resetNote (i) {
+      if (this.notesState[i]) {
+        this.tempHistory.notes.push({cellIndex: i, value: this.notes[i]})
+        this.notes.splice(i, 1, Array.from({length: 9}, () => 0))
       }
-      if (this.temps[i]) {
+    },
+    removeNoteItem (i, number) {
+      const numberIndex = number - 1
+      this.tempHistory.notes.push({cellIndex: i, numberIndex, value: this.notes[i][numberIndex]})
+      this.notes[i].splice(numberIndex, 1, 0)
+    },
+    resetTemp (i) {
+      const value = this.temps[i]
+      if (value) {
+        if (value === this.answer[i]) this.corrects--
+        this.tempHistory.temps.push({cellIndex: i, value})
         this.temps.splice(i, 1, '')
       }
     },
-    resetNote (i) {
-      this.notes.splice(i, 1, Array.from({length: 9}, (n, i) => -(i + 1)))
-    },
-    gameOver () {
-      this.lost = true
-      this.pending = true
-      this.stopTimer()
-    },
-    win () {
-      this.won = true
-      this.pending = true
-      this.stopTimer()
-    },
-    togglePaused () {
-      this.paused = !this.paused
-      if (this.paused) this.stopTimer()
-      else this.startTimer()
+    getActiveIndexes (callback) {
+      if (this.paused) return
+      if (this.multiple) {
+        this.actives.forEach((active, i) => {
+          if (active) callback(i)
+        })
+      } else if (this.active.id && !this.active.value) {
+        return callback(this.active.id)
+      }
     },
     onMultipleChange () {
       this.multiple = !this.multiple
       if (!this.multiple) {
         this.actives = Array.from({length: 81}, () => false)
+      } else if (this.active.id && !this.active.value) {
+        this.actives.splice(this.active.id, 1, true)
+        this.active = -1
       }
-      if (!this.active.value) this.active = -1
     },
     onActiveChange (cell) {
       if (this.multiple && !cell.value) {
@@ -234,8 +272,22 @@ export default {
         this.active = cell
       }
     },
-    preventDefault (e) {
-      e.preventDefault()
+    gameOver () {
+      this.lost = true
+      this.openPendingWindow()
+    },
+    win () {
+      this.won = true
+      this.openPendingWindow()
+    },
+    openPendingWindow () {
+      this.pending = true
+      this.stopTimer()
+    },
+    togglePaused () {
+      this.paused = !this.paused
+      if (this.paused) this.stopTimer()
+      else this.startTimer()
     }
   },
   filters: {
