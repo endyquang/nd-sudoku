@@ -1,16 +1,27 @@
 
 // NO COMMENT
 
-const BLOCKS_INDEXES = _makeBlocks()
+const BLOCKS_INDEXES = _makeBlockIndexes()
+const AFFTECEDS = _makeArr81((c, i) => _getAffectedCells(i))
+const CORRECTS_QUANTITY = {
+  hardest: 26,
+  easy: 41
+}
 
 function generate (difficulty) {
   const output = _makeArr81(() => '')
   const possibilities = _makeArr81(() => Array.from({length: 9}, () => 1))
-  const relevances =  _makeArr81((c, i) => _getRelevantCells(i))
 
   _findCell()
+  const answer = [...output]
+  const trimmedAnswer = _trimOutput(output, difficulty)
 
-  return make2DimensionsArr(_trimOutput(output, difficulty))
+  return {
+    answer,
+    trimmedAnswer,
+    blocks: _makeBlocks(trimmedAnswer),
+    corrects: CORRECTS_QUANTITY[difficulty]
+  }
 
   function _findCell (index = 0) {
     if (index === 81) return
@@ -28,18 +39,18 @@ function generate (difficulty) {
 
     const selected = _getRandomElm(vals)
 
-    _updateRelevantPossibilities(index, selected, -1)
+    _updateAffectedPossibilities(index, selected, -1)
 
     if (_findCell(index + 1) === -1) {
       possibilities[index][selected] = 2
-      _updateRelevantPossibilities(index, selected, 1)
+      _updateAffectedPossibilities(index, selected, 1)
       return _findCell(index)
     } else {
       output[index] = selected + 1
     }
   }
-  function _updateRelevantPossibilities (i, number, change = -1) {
-    relevances[i].forEach(cellIndex => {
+  function _updateAffectedPossibilities (i, number, change = -1) {
+    AFFTECEDS[i].forEach(cellIndex => {
       possibilities[cellIndex][number] += change
     })
   }
@@ -49,7 +60,7 @@ function _makeArr81 (func) {
   return Array.from({length: 81}, func)
 }
 
-function _getRelevantCells (i) {
+function _getAffectedCells (i) {
   const output = []
   const {x, y} = _indexToCoord(i)
   const NEXT_ROW = y + 1
@@ -70,18 +81,6 @@ function _getRelevantCells (i) {
   return output
 }
 
-function make2DimensionsArr (output) {
-  const rows = []
-  for (let i = 0; i < 9; i ++) {
-    rows.push([])
-    for (let j = 0; j < 9; j ++) {
-      const index = _coordToIndex(i, j)
-      rows[i].push(output[index])
-    }
-  }
-  return rows
-}
-
 function _indexToCoord (i) {
   return {
     x: i % 9,
@@ -93,10 +92,7 @@ function _coordToIndex (x, y) {
 }
 
 function _trimOutput (output, difficulty) {
-  const n = {
-    hardest: 26,
-    easy: 41
-  }[difficulty]
+  const n = CORRECTS_QUANTITY[difficulty]
   const blockDistributions = _distributeToBlocks(n)
   blockDistributions.forEach((total, blockNo) => {
     const cells = BLOCKS_INDEXES[blockNo].slice()
@@ -141,7 +137,7 @@ function _shuffle (arr) {
   return output
 }
 
-function _makeBlocks () {
+function _makeBlockIndexes () {
   return Array.from({length: 9}, (c, i) => {
     const start = i % 3 * 3 + Math.floor(i / 3) * 27
     return Array.from({length: 9}, (c, j) => {
@@ -149,6 +145,24 @@ function _makeBlocks () {
       return start + n
     })
   })
+}
+
+function _makeBlocks (output) {
+  const blocks = []
+  BLOCKS_INDEXES.forEach((blockIndexes, i) => {
+    blocks.push([])
+    blockIndexes.forEach(cellIndex => {
+      const {x, y} = _indexToCoord(cellIndex)
+      blocks[i].push({
+        id: cellIndex,
+        value: output[cellIndex],
+        row: y,
+        col: x,
+        block: i
+      })
+    })
+  })
+  return blocks
 }
 
 export default {
