@@ -65,7 +65,7 @@
 
       <div class="controls">
         <base-btn @click="noting = !noting" :class="{'primary': noting}"><div>&#9998;</div> Note</base-btn>
-        <base-btn @click="undo"><div>&#9100;</div> Undo</base-btn>
+        <base-btn @click="undo"><div>&#8634;</div> Undo</base-btn>
         <base-btn @click="erase"><div>&#10008;</div> Erase</base-btn>
         <base-btn @click="onMultipleChange" :class="{'primary': multiple}"><div>&#9783;</div> Multiple</base-btn>
       </div>
@@ -142,7 +142,7 @@ export default {
   },
   methods: {
     start () {
-      if (this.time > 0) this.stopTimer()
+      this.stopTimer()
       const {blocks, answer, trimmedAnswer} = SUDOKU.generate('hardest')
       this.blocks = blocks
       this.answer = answer
@@ -215,6 +215,7 @@ export default {
       this.pushHistory()
     },
     undo () {
+      if (this.paused) return
       const {notes = [], temps = []} = this.histories.pop() || {}
       notes.forEach(({cellIndex, numberIndex, value}) => {
         if (numberIndex > -1) {

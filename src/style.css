@@ -39,7 +39,7 @@ div, .main, .header, table, tr, td {
   border-color: transparent transparent transparent #aaa;
 }
 .header {
-  padding: 10px 2px;
+  padding: 8px 2px;
 }
 .main {
   position: relative;
@@ -50,7 +50,6 @@ div, .main, .header, table, tr, td {
   padding: 2px;
   grid-gap: 2px;
   background-color: #777;
-  margin-bottom: 16px;
   position: relative;
 }
 .paused {
@@ -259,7 +258,7 @@ div, .main, .header, table, tr, td {
 
 /* CONTROLS */
 .controls {
-  margin-bottom: 16px;
+  margin: 12px 0;
   grid-template-columns: repeat(4, 1fr);
 }
 .controls .base__btn {
