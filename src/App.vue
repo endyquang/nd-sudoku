@@ -26,7 +26,7 @@
         </div>
       </div>
       <div class="play" :class="{'play--paused': paused, 'play--noting': noting}">
-        <div class="play__block" v-for="(block, b) in blocks" :key="`b-${b}`">
+        <div class="play__block" v-for="(block, b) in blocks" :key="`b-${b}`" @touchmove="onTouchMove">
           <template v-for="cell in block">
             <div class="play__cell" v-if="paused" :key="cell.id" />
             <div
@@ -44,20 +44,24 @@
                         : ''
               ]"
               :key="cell.id"
+              :data-id="cell.addr"
               ref="cells"
-              @click="onActiveChange(cell)"
+              @click="!touchable && onActiveChange(cell, $event)"
+              @touchstart="onActiveChange(cell, $event)"
             >
               <div
                 v-if="cell.value"
+                :data-id="cell.addr"
                 class="play__cell__fixed"
               >{{cell.value}}</div>
-              <div class="play__cell__notes" v-else-if="notesState[cell.id]">
-                <div class="play__cell__notes__item" v-for="(note, n) in notes[cell.id]" :key="n">
+              <div :data-id="cell.addr" class="play__cell__notes" v-else-if="notesState[cell.id]">
+                <div :data-id="cell.addr" class="play__cell__notes__item" v-for="(note, n) in notes[cell.id]" :key="n">
                   {{note > 0 ? note : ''}}
                 </div>
               </div>
               <div
                 v-else-if="temps[cell.id]"
+                :data-id="cell.addr"
                 class="play__cell__temp"
                 :class="{wrong: temps[cell.id] !== answer[cell.id]}"
               >
@@ -127,11 +131,11 @@ function _initData (getKey = false) {
   if (getKey) return Object.keys(initData)
 
   for (let key in initData) {
-    if (localStorage[key] !== undefined) {
-      initData[key] = JSON.parse(localStorage[key] || null)
+    const lastVal = localStorage[key]
+    if (lastVal !== undefined && lastVal !== 'undefined') {
+      initData[key] = JSON.parse(lastVal || 'null')
     }
   }
-
   return initData
 }
 
@@ -159,7 +163,7 @@ export default {
   },
   watch: _makeWatcher(),
   mounted () {
-    if (!this.pending && !this.paused) this.startTimer()
+    this.startTimer()
   },
   computed: {
     notesState () {
@@ -175,6 +179,9 @@ export default {
         if (a > 0) filleds[a - 1]++
       })
       return filleds
+    },
+    touchable () {
+      return 'ontouchstart' in document.documentElement
     }
   },
   methods: {
@@ -202,11 +209,12 @@ export default {
       const blocks = Array.from({length: 9}, () => [])
       answer.forEach((value, id) => {
         const {row, col, block} = SUDOKU.addresses[id]
-        blocks[block].push({value, id, row, col})
+        blocks[block].push({value, id, row, col, addr: block + '-' + blocks[block].length})
       })
       return blocks
     },
     startTimer () {
+      if (this.pending || this.paused) return
       this.timer = setInterval(() => this.time++, 1000)
     },
     stopTimer () {
@@ -319,7 +327,8 @@ export default {
         this.active = -1
       }
     },
-    onActiveChange (cell) {
+    onActiveChange (cell, e) {
+      if (!cell || cell === this.active) return
       if (this.multiple && !cell.value) {
         this.actives.splice(cell.id, 1, !this.actives[cell.id])
       } else {
@@ -342,6 +351,16 @@ export default {
       this.paused = !this.paused
       if (this.paused) this.stopTimer()
       else this.startTimer()
+    },
+    onTouchMove (e) {
+      if (this.multiple) return
+      const {clientX, clientY} = e.touches[0]
+      const el = document.elementFromPoint(clientX, clientY)
+      if (!el) return
+      const id = el.getAttribute('data-id')
+      if (!id) return
+      const [block, i] = id.split('-')
+      this.onActiveChange(this.blocks[block][i])
     }
   },
   filters: {
