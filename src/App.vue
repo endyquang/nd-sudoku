@@ -159,7 +159,7 @@ export default {
   },
   watch: _makeWatcher(),
   mounted () {
-    if (!this.pending) this.startTimer()
+    if (!this.pending && !this.paused) this.startTimer()
   },
   computed: {
     notesState () {
