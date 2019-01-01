@@ -1,0 +1,21 @@
+{
+  "name": "Nudoku",
+  "description": "Learn how to create and share something or other.",
+  "icons": [
+    {
+      "src": "/nudoku/ico_sm.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/nudoku/ico.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/nudoku",
+  "background-color": "#bababa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#3367D6"
+}

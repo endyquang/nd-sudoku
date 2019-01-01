@@ -3,7 +3,7 @@ html {
 }
 body, html {
   margin: 0;
-  background: #efefef;
+  background: #fdfdfd;
   height: 100%;
   max-height: 100%;
   overflow: hidden;
@@ -132,6 +132,9 @@ div, .main, .header, table, tr, td {
   line-height: 24px;
   font-weight: 500;
 }
+.play--noting .play__cell.active, .play--noting .play__cell.same {
+  background: #b4ed9e;
+}
 .play__cell.affected {
   background: #f3f3f3;
 }
@@ -179,7 +182,7 @@ div, .main, .header, table, tr, td {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #efefef;
+  background: #fdfdfd;
   display: grid;
   grid-template-rows: repeat(4, 1fr);
   text-align: center;

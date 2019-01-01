@@ -15,7 +15,7 @@
     <header class="header">
       <span>Mistakes: {{mistakes}}/3</span>
       <base-btn @click="togglePaused">
-        {{time | prettifyTime}} <i class="header__btn__icon" :class="[paused ? 'ico__pause' : 'ico__play']"></i>
+        {{time | prettifyTime}} <i class="header__btn__icon" :class="[paused ? 'ico__pause' : 'ico__play']" />
       </base-btn>
       <base-btn @click="start">New Game</base-btn>
     </header>
@@ -25,19 +25,24 @@
           <base-btn @click="togglePaused"><i class="ico__play ico--xl" /></base-btn>
         </div>
       </div>
-      <div class="play" :class="{'play--paused': paused}">
+      <div class="play" :class="{'play--paused': paused, 'play--noting': noting}">
         <div class="play__block" v-for="(block, b) in blocks" :key="`b-${b}`">
           <template v-for="cell in block">
             <div class="play__cell" v-if="paused" :key="cell.id" />
             <div
               v-else
               class="play__cell"
-              :class="{
-                'selected': actives[cell.id],
-                'active': active === cell,
-                'affected': !multiple && (b === active.block || cell.row === active.row || cell.col === active.col),
-                'same': temps[active.id] && temps[active.id] === temps[cell.id]
-              }"
+              :class="[
+                actives[cell.id]
+                  ? 'selected'
+                  : active === cell
+                    ? 'active'
+                    : !multiple && (b === active.block || cell.row === active.row || cell.col === active.col)
+                      ? 'affected'
+                      : temps[active.id] && temps[active.id] === temps[cell.id]
+                        ? 'same'
+                        : ''
+              ]"
               :key="cell.id"
               ref="cells"
               @click="onActiveChange(cell)"
@@ -64,10 +69,10 @@
       </div>
 
       <div class="controls">
-        <base-btn @click="noting = !noting" :class="{'primary': noting}"><div>&#9998;</div> Note</base-btn>
-        <base-btn @click="undo"><div>&#8634;</div> Undo</base-btn>
+        <base-btn @click="toggleNoting" :class="{'primary': noting}"><div>&#9998;</div> Note</base-btn>
+        <base-btn @click="undo"><div>&#x21BA;</div> Undo</base-btn>
         <base-btn @click="erase"><div>&#10008;</div> Erase</base-btn>
-        <base-btn @click="onMultipleChange" :class="{'primary': multiple}"><div>&#9783;</div> Multiple</base-btn>
+        <base-btn @click="toggleMultiple" :class="{'primary': multiple}"><div>&#9783;</div> Multiple</base-btn>
       </div>
 
       <div class="number">
@@ -96,33 +101,65 @@ function _getHms (seconds = 0) {
   return [hrs, mins, secs]
 }
 
+function _initData (getKey = false) {
+  const initData = {
+    active: -1,
+    actives: [],
+    answer: [],
+    blocks: [],
+    corrects: 0,
+    difficulty: 'hardest',
+    histories: [],
+    lost: false,
+    mistakes: 0,
+    multiple: false,
+    notes: [],
+    noting: false,
+    paused: false,
+    pending: true,
+    tempHistory: {},
+    temps: [],
+    time: 0,
+    timer: null,
+    won: false
+  }
+
+  if (getKey) return Object.keys(initData)
+
+  for (let key in initData) {
+    if (localStorage[key] !== undefined) {
+      initData[key] = JSON.parse(localStorage[key] || null)
+    }
+  }
+
+  return initData
+}
+
+function _makeWatcher () {
+  const output = {}
+  const keys = _initData(true)
+  keys.forEach(key => {
+    output[key] = {
+      deep: true,
+      handler (v) {
+        localStorage[key] = JSON.stringify(v)
+      }
+    }
+  })
+  return output
+}
+
 export default {
   name: 'app',
   components: {
     BaseBtn
   },
   data () {
-    return {
-      blocks: [],
-      answer: [],
-      mistakes: 0,
-      time: 0,
-      active: -1,
-      actives: [],
-      difficulty: 'hardest',
-      temps: [],
-      notes: [],
-      noting: false,
-      pending: true,
-      won: false,
-      lost: false,
-      paused: false,
-      multiple: false,
-      timer: null,
-      corrects: 0,
-      histories: [],
-      tempHistory: {}
-    }
+    return _initData()
+  },
+  watch: _makeWatcher(),
+  mounted () {
+    if (!this.pending) this.startTimer()
   },
   computed: {
     notesState () {
@@ -143,22 +180,31 @@ export default {
   methods: {
     start () {
       this.stopTimer()
-      const {blocks, answer, trimmedAnswer} = SUDOKU.generate('hardest')
-      this.blocks = blocks
-      this.answer = answer
-      this.temps = trimmedAnswer
-      this.notes = Array.from({length: 81}, () => Array.from({length: 9}, () => 0))
-      this.corrects = trimmedAnswer.filter(Boolean).length
-      this.mistakes = 0
-      this.time = 0
+      const {answer, trimmedAnswer} = SUDOKU.generate('hardest')
       this.active = -1
-      this.pending = false
-      this.multiple = false
-      this.timer = null
-      this.histories = []
-      this.tempHistory = {notes: [], temps: []}
       this.actives = Array.from({length: 81}, () => false)
+      this.answer = answer
+      this.blocks = this.makeBlocks(trimmedAnswer)
+      this.corrects = trimmedAnswer.filter(Boolean).length
+      this.histories = []
+      this.mistakes = 0
+      this.multiple = false
+      this.notes = Array.from({length: 81}, () => Array.from({length: 9}, () => 0))
+      this.paused = false
+      this.pending = false
+      this.time = 0
+      this.timer = null
+      this.tempHistory = {notes: [], temps: []}
+      this.temps = trimmedAnswer
       this.startTimer()
+    },
+    makeBlocks (answer) {
+      const blocks = Array.from({length: 9}, () => [])
+      answer.forEach((value, id) => {
+        const {row, col, block} = SUDOKU.addresses[id]
+        blocks[block].push({value, id, row, col})
+      })
+      return blocks
     },
     startTimer () {
       this.timer = setInterval(() => this.time++, 1000)
@@ -253,15 +299,22 @@ export default {
         this.actives.forEach((active, i) => {
           if (active) callback(i)
         })
-      } else if (this.active.id && !this.active.value) {
+      } else if (this.active.id >= 0 && !this.active.value) {
         return callback(this.active.id)
       }
     },
-    onMultipleChange () {
+    toggleNoting () {
+      this.noting = !this.noting
+      if (!this.noting) {
+        this.multiple = false
+      }
+    },
+    toggleMultiple () {
       this.multiple = !this.multiple
+      this.noting = this.multiple
       if (!this.multiple) {
         this.actives = Array.from({length: 81}, () => false)
-      } else if (this.active.id && !this.active.value) {
+      } else if (this.active.id >= 0 && !this.active.value) {
         this.actives.splice(this.active.id, 1, true)
         this.active = -1
       }
