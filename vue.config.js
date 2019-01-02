@@ -5,7 +5,7 @@ module.exports = {
   productionSourceMap: process.env.NODE_ENV === 'development',
   outputDir: 'docs',
   configureWebpack: {
-    plugins: [
+    plugins: process.env.NODE_ENV === 'production' ? [
       new SWPrecache({
         cacheId: 'blabla',
         filepath: 'docs/service-worker.js',
@@ -15,6 +15,6 @@ module.exports = {
         ],
         stripPrefix: 'docs/'
       })
-    ]
+    ] : []
   }
 }

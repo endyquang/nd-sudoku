@@ -8,6 +8,18 @@ body, html {
   max-height: 100%;
   overflow: hidden;
 }
+@media (max-width: 767px) and (orientation: landscape) {
+  html {
+    transform: rotate(-90deg);
+    transform-origin: left top;
+    width: 100vh;
+    height: 100vw;
+    max-height: 100vw;
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+}
 div, .main, .header, table, tr, td {
   box-sizing: border-box;
 }
