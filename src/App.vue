@@ -67,7 +67,6 @@
               >
                 {{temps[cell.id]}}
               </div>
-              <div v-else v-text="answer[cell.id]" style="color: red; display: flex; justify-content: center; align-items: center; height: 100%;" />
             </div>
           </template>
         </div>
