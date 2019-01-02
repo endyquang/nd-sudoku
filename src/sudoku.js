@@ -75,18 +75,23 @@ function _trimAnswer (answer, difficulty) {
       .map(cell => BLOCKS_INDEXES[blockIndex][cell])
     const leftovers = BLOCKS_INDEXES[blockIndex]
       .filter(cell => !selectedCells.includes(cell))
-    if (leftovers.find(cell => cellsRules[cell].find(rule => rules[rule] === 1))) {
+    _updateRules(leftovers, -1)
+    if (rules.findIndex(rule => rule <= 0) > -1) {
+      _updateRules(leftovers, 1)
       return _trimBlock(blockIndex)
     }
-    leftovers.forEach(cell => cellsRules[cell].forEach(rule => rules[rule]--))
     remainedCellsByBlock[blockIndex] = selectedCells
     if (blockIndex < 8 && _trimBlock(blockIndex + 1) === -1 && blockIndex > 0) {
       blocksPossibilities[blockIndex + 1] = _makeBlockPossibilities(blockDistributions[blockIndex])
       remainedCellsByBlock[blockIndex + 1] = []
       remainedCellsByBlock[blockIndex] = []
-      leftovers.forEach(cell => cellsRules[cell].forEach(rule => rules[rule]++))
+      _updateRules(leftovers, 1)
       return _trimBlock(blockIndex)
     }
+  }
+
+  function _updateRules (cells, change) {
+    cells.forEach(cell => cellsRules[cell].forEach(rule => rules[rule] += change))
   }
 
   function _makeBlockPossibilities (dis) {

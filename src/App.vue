@@ -67,6 +67,7 @@
               >
                 {{temps[cell.id]}}
               </div>
+              <div v-else v-text="answer[cell.id]" style="color: red; display: flex; justify-content: center; align-items: center; height: 100%;" />
             </div>
           </template>
         </div>
@@ -289,9 +290,11 @@ export default {
       }
     },
     removeNoteItem (i, number) {
-      const numberIndex = number - 1
-      this.tempHistory.notes.push({cellIndex: i, numberIndex, value: this.notes[i][numberIndex]})
-      this.notes[i].splice(numberIndex, 1, 0)
+      if (this.notesState[i]) {
+        const numberIndex = number - 1
+        this.tempHistory.notes.push({cellIndex: i, numberIndex, value: this.notes[i][numberIndex]})
+        this.notes[i].splice(numberIndex, 1, 0)
+      }
     },
     resetTemp (i) {
       const value = this.temps[i]
