@@ -222,6 +222,7 @@ export default {
     },
     pushHistory () {
       // UNDO MAXIMUM 50 TIMES
+      if (!this.tempHistory.notes.length && !this.tempHistory.temps.length) return
       this.histories.push(this.tempHistory)
       if (this.histories.length > 50) this.histories.splice(0, 1)
       this.tempHistory = {notes: [], temps: []}

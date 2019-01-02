@@ -13,8 +13,8 @@ body, html {
     transform: rotate(-90deg);
     transform-origin: left top;
     width: 100vh;
-    height: 100vw;
-    max-height: 100vw;
+    height: calc(100vw - 16px);
+    max-height: calc(100vw - 16px);
     position: absolute;
     top: 100%;
     left: 0;
