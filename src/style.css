@@ -12,9 +12,9 @@ body, html {
   html {
     transform: rotate(-90deg);
     transform-origin: left top;
-    width: 100vh;
-    height: calc(100vw - 16px);
-    max-height: calc(100vw - 16px);
+    width: calc(100vh - 24px);
+    height: 100vw;
+    max-height: 100vw - 16px;
     position: absolute;
     top: 100%;
     left: 0;
