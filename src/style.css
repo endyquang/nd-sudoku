@@ -42,7 +42,7 @@ button:focus {
 }
 #app {
   user-select: none;
-  font-family: Century Gothic, Geneva, Tahoma, sans-serif;
+  font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
   width: calc(100% - 12px);
   max-width: 400px;
   margin: 0 auto;
