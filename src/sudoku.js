@@ -56,7 +56,7 @@ function _trimAnswer (initAnswer) {
   let left = 81
   _trim()
   function _trim (pos = 0) {
-    if (pos === 81 || left < 24) return
+    if (pos === 81 || left < 22) return
     const cellIndex = positions[pos]
     const val = answer.splice(cellIndex, 1, '')[0]
     if (!_hasUniqueSolution(answer)) {

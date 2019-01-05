@@ -23,9 +23,26 @@ body, html {
 div, .main, .header, table, tr, td {
   box-sizing: border-box;
 }
+button {
+  background: transparent;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  color: #666;
+  transition: .4s;
+}
+button:hover {
+  color: #333;
+}
+button:active {
+  transform: translate(0, 3px);
+}
+button:focus {
+  outline: none;
+}
 #app {
   user-select: none;
-  font-family:Verdana, Geneva, Tahoma, sans-serif;
+  font-family: Century Gothic, Geneva, Tahoma, sans-serif;
   width: calc(100% - 12px);
   max-width: 400px;
   margin: 0 auto;
@@ -39,10 +56,13 @@ div, .main, .header, table, tr, td {
 }
 .header *:nth-child(3) {margin-left: auto;}
 .header *:nth-child(2) {margin: auto;}
-.header .base__btn, .header {
+.header button, .header {
   color: #777;
   font-size: 13px;
   position: relative;
+}
+.header button {
+  height: 32px;
 }
 .header .header__btn__icon {
   position: absolute;
@@ -71,7 +91,7 @@ div, .main, .header, table, tr, td {
   top: 0;
   z-index: 1;
 }
-.paused .base__btn {
+.paused button {
   border-radius: 50%;
   border: 1px solid #777;
   background: #fff;
@@ -140,9 +160,9 @@ div, .main, .header, table, tr, td {
   height: 100%;
   justify-content: center;
   align-items: center;
-  font-size: 24px;
-  line-height: 24px;
-  font-weight: 500;
+  font-size: 34px;
+  line-height: 34px;
+  font-weight: 400;
 }
 .play--noting .play__cell.active, .play--noting .play__cell.same {
   background: #b4ed9e;
@@ -163,7 +183,7 @@ div, .main, .header, table, tr, td {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   color: #373fb2;
-  font-size: 28px;
+  font-size: 38px;
 }
 .numbers__item.disabled {
   opacity: .5;
@@ -276,15 +296,15 @@ div, .main, .header, table, tr, td {
   margin: 12px 0;
   grid-template-columns: repeat(4, 1fr);
 }
-.controls .base__btn {
+.controls button {
   height: auto;
-  font-size: 13px;
+  font-size: 12px;
 }
-.controls .base__btn div {
+.controls button div {
   margin-bottom: 4px;
-  font-size: 20px;
+  font-size: 26px;
 }
-.base__btn.primary {
+button.primary {
   color: #2b9c48;
 }
 

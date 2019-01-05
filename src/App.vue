@@ -10,19 +10,19 @@
       <div class="pending__noti" v-else-if="lost">YOU DUMBASS LOSER!</div>
       <div class="pending__subtitle" v-else>Just a dummy text to make it look not as empty as its creator</div>
       <div class="pending__score"></div>
-      <base-btn @click="start" class="pending__start">PLAY {{won || lost ? 'AGAIN' : 'NOW'}}</base-btn>
+      <button @click="start" class="pending__start">PLAY {{won || lost ? 'AGAIN' : 'NOW'}}</button>
     </div>
     <header class="header">
       <span>Mistakes: {{mistakes}}/3</span>
-      <base-btn @click="togglePaused">
+      <button @click="togglePaused">
         {{time | prettifyTime}} <i class="header__btn__icon" :class="[paused ? 'ico__pause' : 'ico__play']" />
-      </base-btn>
-      <base-btn @click="start">New Game</base-btn>
+      </button>
+      <button @click="start">New Game</button>
     </header>
     <main class="main">
       <div class="paused" v-if="paused">
         <div class="paused__content">
-          <base-btn @click="togglePaused"><i class="ico__play ico--xl" /></base-btn>
+          <button @click="togglePaused"><i class="ico__play ico--xl" /></button>
         </div>
       </div>
       <div class="play" :class="{'play--paused': paused, 'play--noting': noting}">
@@ -74,10 +74,10 @@
       </div>
 
       <div class="controls">
-        <base-btn @click="toggleNoting" :class="{'primary': noting}"><div>&#9998;</div> Note</base-btn>
-        <base-btn @click="undo"><div>&#x21BA;</div> Undo</base-btn>
-        <base-btn @click="erase"><div>&#10008;</div> Erase</base-btn>
-        <base-btn @click="toggleMultiple" :class="{'primary': multiple}"><div>&#9783;</div> Multiple</base-btn>
+        <button @click="toggleNoting" :class="{'primary': noting}"><div>&#9998;</div> Note</button>
+        <button @click="undo"><div>&#x21BA;</div> Undo</button>
+        <button @click="erase"><div>&#10008;</div> Erase</button>
+        <button @click="toggleMultiple" :class="{'primary': multiple}"><div>&#9783;</div> Multiple</button>
       </div>
 
       <div class="number">
@@ -95,7 +95,6 @@
 
 <script>
 import SUDOKU from './sudoku'
-import BaseBtn from '@/atoms/BaseBtn'
 
 function _getHms (seconds = 0) {
   const secsPerHr = 60 * 60
@@ -156,9 +155,6 @@ function _makeWatcher () {
 
 export default {
   name: 'app',
-  components: {
-    BaseBtn
-  },
   data () {
     return _initData()
   },
