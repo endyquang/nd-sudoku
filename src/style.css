@@ -91,11 +91,11 @@ div, .main, .header, table, tr, td {
   justify-content: center;
   align-items: center;
 }
-.play__block {
+.play__box {
   grid-gap: 1px;
   background-color: #ccc;
 }
-.play, .play__block, .play__cell__notes {
+.play, .play__box, .play__cell__notes {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-auto-rows: 1fr;

@@ -1,25 +1,22 @@
 
 const ADDRESSES = _makeAddresses()
-const BLOCK_POSS = _makeBlockPoss([2,3,4])
-const BLOCKS_INDEXES = _makeBlockIndexes()
+const BOXES_INDEXES = _makeBoxIndexes()
 const AFFTECEDS = _makeArr81((c, i) => _makeAffectedCells(i))
-const CORRECTS_QUANTITY = {
-  hardest: 26,
-  easy: 41
-}
+const RELATEDS = _makeArr81((c, i) => _makeRelatedCells(i))
 
-function generate (difficulty) {
+// <GENERATOR>
+function generate () {
   const answer = _makeArr81(() => '')
   const possibilities = _makeArr81(() => Array.from({length: 9}, () => 1))
 
-  _findCell()
+  _makeCell()
 
   return {
     answer,
-    trimmedAnswer: _trimAnswer(answer, difficulty)
+    trimmedAnswer: _trimAnswer(answer)
   }
 
-  function _findCell (index = 0) {
+  function _makeCell (index = 0) {
     if (index === 81) return
 
     const vals = []
@@ -37,10 +34,10 @@ function generate (difficulty) {
 
     _updateAffectedPossibilities(index, selected, -1)
 
-    if (_findCell(index + 1) === -1) {
+    if (_makeCell(index + 1) === -1) {
       possibilities[index][selected] = 2
       _updateAffectedPossibilities(index, selected, 1)
-      return _findCell(index)
+      return _makeCell(index)
     } else {
       answer[index] = selected + 1
     }
@@ -53,118 +50,84 @@ function generate (difficulty) {
   }
 }
 
-function _trimAnswer (answer, difficulty) {
-  const output = _makeArr81(() => '')
-  const {cellsRules, rules} = _makeRules(answer)
-  const remainedCellsByBlock = Array.from({length: 9}, () => [])
-  const blockDistributions = _distributeToBlocks(CORRECTS_QUANTITY[difficulty])
-  const blocksPossibilities = blockDistributions.map(_makeBlockPossibilities)
-
-  _trimBlock()
-
-  remainedCellsByBlock.forEach(block => block.forEach(cell => {
-    output[cell] = answer[cell]
-  }))
-
-  function _trimBlock (blockIndex = 0) {
-    const randomPoss = BLOCK_POSS[blockDistributions[blockIndex]][_spliceRandomElm(blocksPossibilities[blockIndex])]
-    if (!randomPoss) {
-      return -1
+function _trimAnswer (initAnswer) {
+  const positions = _shuffle(Array.from({length: 81}, (x, i) => i))
+  const answer = [...initAnswer]
+  let left = 81
+  _trim()
+  function _trim (pos = 0) {
+    if (pos === 81 || left < 24) return
+    const cellIndex = positions[pos]
+    const val = answer.splice(cellIndex, 1, '')[0]
+    if (!_hasUniqueSolution(answer)) {
+      answer.splice(cellIndex, 1, val)
+    } else {
+      left--
     }
-    const selectedCells = randomPoss
-      .map(cell => BLOCKS_INDEXES[blockIndex][cell])
-    const leftovers = BLOCKS_INDEXES[blockIndex]
-      .filter(cell => !selectedCells.includes(cell))
-    _updateRules(leftovers, -1)
-    if (rules.findIndex(rule => rule <= 0) > -1) {
-      _updateRules(leftovers, 1)
-      return _trimBlock(blockIndex)
-    }
-    remainedCellsByBlock[blockIndex] = selectedCells
-    if (blockIndex < 8 && _trimBlock(blockIndex + 1) === -1 && blockIndex > 0) {
-      blocksPossibilities[blockIndex + 1] = _makeBlockPossibilities(blockDistributions[blockIndex])
-      remainedCellsByBlock[blockIndex + 1] = []
-      remainedCellsByBlock[blockIndex] = []
-      _updateRules(leftovers, 1)
-      return _trimBlock(blockIndex)
+    _trim(pos + 1)
+  }
+
+  return answer
+}
+
+function _hasUniqueSolution (initCells) {
+  const cells = [...initCells]
+  const possibilities = _makeArr81((c, i) => _makeRemainingPossibilities(cells, i))
+  let solutionsCount = 0
+  _findSolutions()
+  return solutionsCount === 1
+  function _findSolutions (index = 0) {
+    if (index === 81) return ++solutionsCount
+    if (!possibilities[index]) return _findSolutions(index + 1)
+
+    const selected = _getFirstValidPossibility(possibilities[index])
+    if (selected > -1) {
+      _updateAffectedPossibilities(index, selected, -1)
+      _findSolutions(index + 1)
+      if (solutionsCount < 2) {
+        possibilities[index][selected] = 2
+        _updateAffectedPossibilities(index, selected, 1)
+        _findSolutions(index)
+      }
+    } else {
+      possibilities[index].forEach((p, i) => {
+        if (p === 2) possibilities[index][i] = 1
+      })
     }
   }
 
-  function _updateRules (cells, change) {
-    cells.forEach(cell => cellsRules[cell].forEach(rule => rules[rule] += change))
+  function _updateAffectedPossibilities (i, number, change = -1) {
+    AFFTECEDS[i].forEach(cellIndex => {
+      if (possibilities[cellIndex]) {
+        possibilities[cellIndex][number] += change
+      }
+    })
   }
+}
 
-  function _makeBlockPossibilities (dis) {
-    return Array.from({length: BLOCK_POSS[dis].length}, (x, i) => i)
+function _makeRemainingPossibilities (cells, cellIndex) {
+  if (cells[cellIndex]) return null
+  const output = Array.from({length: 9}, () => 1)
+  for (let relateIndex of RELATEDS[cellIndex]) {
+    if (cells[relateIndex]) output[cells[relateIndex] - 1] = 0
   }
-
   return output
 }
 
-// Kind of rules that say there must be at least 1 in a group of cells
-function _makeRules (answer) {
-  // rules for each cells, stored by rule index in rules arr below
-  const {cellsRules, rules} = _makeDefaultRules()
-
-  _makeTriangles(answer, (triangle) => {
-    triangle.forEach(tip => {
-      cellsRules[tip].push(rules.length)
-    })
-    rules.push(4)
-  })
-
-  return {cellsRules, rules}
-}
-
-function _makeTriangles (answer, callback) {
-  const numbersIndexes = Array.from({length: 9}, () => [])
-  answer.forEach((cell, i) => {
-    numbersIndexes[cell - 1].push(i)
-  })
-  numbersIndexes.forEach(numberIndexes => {
-    for (let i = 0; i < 9; i++) {
-      const tip1 = numberIndexes[i]
-      for (let j = i + 1; j < 9; j++) {
-        _findOtherTips(tip1, numberIndexes[j], (tip2, tip4) => {
-          if (answer[tip2] === answer[tip4]) {
-            callback([tip1, tip2, numberIndexes[j], tip4])
-          }
-        })
-      }
+function _getFirstValidPossibility (possibilities) {
+  for (let i = 0; i < 9; i++) {
+    if (possibilities[i] === 1) {
+      return i
     }
-  })
+  }
 }
-
-function _findOtherTips (tip1, tip3, callback) {
-  const tip1Coord = _indexToCoord(tip1)
-  const tip3Coord = _indexToCoord(tip3)
-  const tip2 = _coordToIndex(tip1Coord.x, tip3Coord.y)
-  const tip4 = _coordToIndex(tip3Coord.x, tip1Coord.y)
-  callback(tip2, tip4)
-}
-
-function _distributeToBlocks (n) {
-  const cases = {
-    26: [
-      [4, 4, 4, 4, 2, 2, 2, 2, 2],
-      [3, 3, 4, 4, 4, 2, 2, 2, 2],
-      [3, 3, 3, 3, 4, 4, 2, 2, 2],
-      [3, 3, 3, 3, 3, 3, 4, 2, 2],
-      [3, 3, 3, 3, 3, 3, 3, 3, 2]
-    ]
-  }[n]
-  return _shuffle(_getRandomElm(cases))
-}
+// </GENERATOR>
 
 // <FACTORY>
 function _makeAddresses () {
-  return Array.from({length: 81}, (cell, i) => {
-    const {x: col, y: row} = _indexToCoord(i)
-    const block = _coordToBlock(col, row)
-    return {row, col, block}
-  })
+  return Array.from({length: 81}, (cell, i) => _indexToCoord(i))
 }
-function _makeBlockIndexes () {
+function _makeBoxIndexes () {
   return Array.from({length: 9}, (c, i) => {
     const start = i % 3 * 3 + Math.floor(i / 3) * 27
     return Array.from({length: 9}, (c, j) => {
@@ -178,11 +141,11 @@ function _makeArr81 (func) {
 }
 function _makeAffectedCells (i) {
   const output = []
-  const {x, y} = _indexToCoord(i)
-  const NEXT_ROW = y + 1
-  const MAX_ROW = y + 3 - y % 3
-  const MIN_COL = x - x % 3
-  const MAX_COL = x + 3 - x % 3
+  const {col, row} = _indexToCoord(i)
+  const NEXT_ROW = row + 1
+  const MAX_ROW = row + 3 - row % 3
+  const MIN_COL = col - col % 3
+  const MAX_COL = col + 3 - col % 3
   for (let curI = i + 1; curI < i + 9 - i % 9; curI++) {
     output.push(curI)
   }
@@ -196,60 +159,41 @@ function _makeAffectedCells (i) {
   }
   return output
 }
-function _makeDefaultRules () {
-  // rules for all rows and cols to have at least 1 cell each
-  const cellsRules = Array.from({length: 81}, () => [])
-  const rules = []
-
-  for (let i = 0; i < 9; i++) {
-    for (let j = 0; j < 9; j++) {
-      cellsRules[9 * i + j].push(rules.length) // {x: j, y: i}
-      cellsRules[9 * j + i].push(rules.length + 1) // {x: i, y: j}
-    }
-    rules.push(9, 9)
+function _makeRelatedCells (i) {
+  const output = []
+  const {col, row, box} = _indexToCoord(i)
+  for (let curI = row * 9; curI < i + 9 - col; curI++) {
+    output.push(curI)
   }
-
-  return {cellsRules, rules}
-}
-function _makeBlockPoss (distributions) {
-  const output = {}
-  for (let k of new Set(distributions)) {
-    output[k] = _makePossByK(k)
+  BOXES_INDEXES[box].forEach(curI => output.push(curI))
+  for (let curI = col; curI < 81; curI += 9) {
+    output.push(curI)
   }
-  function _makePossByK (k, alls = [], cur = []) {
-    if (k === 0) return alls.push(cur)
-    const start = (cur.slice(-1)[0] + 1) || 0
-    for (let i = start; i < 9; i++) {
-      _makePossByK(k - 1, alls, cur.concat(i))
-    }
-    return alls
-  }
-  return output
+  return Array.from(new Set(output.filter(n => n!== i)))
 }
 // </FACTORY>
 
 // <UTILS>
 function _shuffle (arr) {
   const src = [...arr]
+  const len = arr.length
   const output = []
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < len; i++) {
     output.push(_spliceRandomElm(src))
   }
   return output
 }
 function _indexToCoord (i) {
+  const col = i % 9
+  const row = Math.floor(i / 9)
   return {
-    x: i % 9,
-    y: Math.floor(i / 9)
+    col,
+    row,
+    box: Math.floor(row / 3) * 3 + Math.floor(col / 3)
   }
 }
 function _coordToIndex (x, y) {
   return y * 9 + x
-}
-function _coordToBlock (x, y) {
-  const i = Math.floor(x / 3)
-  const j = Math.floor(y / 3)
-  return j * 3 + i
 }
 function _spliceRandomElm (arr) {
   return arr.splice(_getRandomIndex(arr), 1)[0]
@@ -260,9 +204,6 @@ function _getRandomElm (arr = []) {
 function _getRandomIndex (arr = []) {
   return Math.floor(Math.random() * arr.length)
 }
-// function _getFractional (n) {
-//   return n > 1 ? n * _getFractional(n - 1) : n
-// }
 // </UTILS>
 
 export default {

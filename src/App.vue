@@ -26,8 +26,8 @@
         </div>
       </div>
       <div class="play" :class="{'play--paused': paused, 'play--noting': noting}">
-        <div class="play__block" v-for="(block, b) in blocks" :key="`b-${b}`" @touchmove="onTouchMove">
-          <template v-for="cell in block">
+        <div class="play__box" v-for="(box, b) in boxes" :key="`b-${b}`" @touchmove="onTouchMove">
+          <template v-for="cell in box">
             <div class="play__cell" v-if="paused" :key="cell.id" />
             <div
               v-else
@@ -37,7 +37,7 @@
                   ? 'selected'
                   : active === cell
                     ? 'active'
-                    : !multiple && (b === active.block || cell.row === active.row || cell.col === active.col)
+                    : !multiple && (b === active.box || cell.row === active.row || cell.col === active.col)
                       ? 'affected'
                       : temps[active.id] && temps[active.id] === temps[cell.id]
                         ? 'same'
@@ -67,6 +67,7 @@
               >
                 {{temps[cell.id]}}
               </div>
+              <!-- <div v-else>{{cell}}, {{b}}</div> -->
             </div>
           </template>
         </div>
@@ -110,7 +111,7 @@ function _initData (getKey = false) {
     active: -1,
     actives: [],
     answer: [],
-    blocks: [],
+    boxes: [],
     corrects: 0,
     difficulty: 'hardest',
     histories: [],
@@ -191,7 +192,7 @@ export default {
       this.active = -1
       this.actives = Array.from({length: 81}, () => false)
       this.answer = answer
-      this.blocks = this.makeBlocks(trimmedAnswer)
+      this.boxes = this.makeBoxes(trimmedAnswer)
       this.corrects = trimmedAnswer.filter(Boolean).length
       this.histories = []
       this.mistakes = 0
@@ -205,13 +206,13 @@ export default {
       this.temps = trimmedAnswer
       this.startTimer()
     },
-    makeBlocks (answer) {
-      const blocks = Array.from({length: 9}, () => [])
+    makeBoxes (answer) {
+      const boxes = Array.from({length: 9}, () => [])
       answer.forEach((value, id) => {
-        const {row, col, block} = SUDOKU.addresses[id]
-        blocks[block].push({value, id, row, col, addr: block + '-' + blocks[block].length})
+        const {row, col, box} = SUDOKU.addresses[id]
+        boxes[box].push({value, id, row, col, box, addr: box + '-' + boxes[box].length})
       })
-      return blocks
+      return boxes
     },
     startTimer () {
       if (this.pending || this.paused) return
@@ -254,8 +255,8 @@ export default {
       this.pushHistory()
     },
     clearRelevantNotes (cellId, number) {
-      const {row, col, block} = SUDOKU.addresses[cellId]
-      this.blocks[block].forEach(cell => this.removeNoteItem(cell.id, number))
+      const {row, col, box} = SUDOKU.addresses[cellId]
+      this.boxes[box].forEach(cell => this.removeNoteItem(cell.id, number))
       this.notes.forEach((note, i) => {
         if (row === SUDOKU.addresses[i].row || col === SUDOKU.addresses[i].col) {
           this.removeNoteItem(i, number)
@@ -325,14 +326,14 @@ export default {
       this.noting = this.multiple
       if (!this.multiple) {
         this.actives = Array.from({length: 81}, () => false)
-      } else if (this.active.id >= 0 && !this.active.value) {
+      } else if (this.active.id >= 0 && !this.active.value && !this.temps[this.active.id]) {
         this.actives.splice(this.active.id, 1, true)
         this.active = -1
       }
     },
     onActiveChange (cell, e) {
       if (!cell || cell === this.active) return
-      if (this.multiple && !cell.value) {
+      if (this.multiple && !cell.value && !this.temps[cell.id]) {
         this.actives.splice(cell.id, 1, !this.actives[cell.id])
       } else {
         this.active = cell
@@ -362,8 +363,8 @@ export default {
       if (!el) return
       const id = el.getAttribute('data-id')
       if (!id) return
-      const [block, i] = id.split('-')
-      this.onActiveChange(this.blocks[block][i])
+      const [box, i] = id.split('-')
+      this.onActiveChange(this.boxes[box][i])
     }
   },
   filters: {
