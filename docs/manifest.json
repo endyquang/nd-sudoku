@@ -1,6 +1,6 @@
 {
   "name": "Nudoku",
-  "description": "Learn how to create and share something or other.",
+  "description": "A tailor made sudoku game for experiment",
   "icons": [
     {
       "src": "/nudoku/ico_sm.png",
