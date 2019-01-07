@@ -3,7 +3,7 @@ const ADDRESSES = _makeAddresses()
 const BOXES_INDEXES = _makeBoxIndexes()
 const AFFTECEDS = _makeArr81((c, i) => _makeAffectedCells(i))
 const RELATEDS = _makeArr81((c, i) => _makeRelatedCells(i))
-
+const HOUSES = _makeArr81((c, i) => _makeHouses(i))
 // <GENERATOR>
 function generate () {
   const answer = _makeArr81(() => '')
@@ -72,7 +72,7 @@ function _trimAnswer (initAnswer) {
 
 function _hasUniqueSolution (initCells) {
   const cells = [...initCells]
-  const possibilities = _makeArr81((c, i) => _makeRemainingPossibilities(cells, i))
+  const possibilities = _makeRemainingPossibilities(cells)
   let solutionsCount = 0
   _findSolutions()
   return solutionsCount === 1
@@ -105,11 +105,41 @@ function _hasUniqueSolution (initCells) {
   }
 }
 
-function _makeRemainingPossibilities (cells, cellIndex) {
-  if (cells[cellIndex]) return null
-  const output = Array.from({length: 9}, () => 1)
+function _updateRelatedPossibilities (possibilities, cells, cellIndex, validCounts) {
+  const i = cells[cellIndex] - 1
   for (let relateIndex of RELATEDS[cellIndex]) {
-    if (cells[relateIndex]) output[cells[relateIndex] - 1] = 0
+    if (!possibilities[relateIndex] || !possibilities[relateIndex][i]) continue
+    possibilities[relateIndex][i] = 0
+    if (--validCounts[relateIndex] === 1) {
+      cells[relateIndex] = possibilities[relateIndex].findIndex(Boolean) + 1
+      possibilities[relateIndex] = null
+      _updateRelatedPossibilities(possibilities, cells, relateIndex, validCounts)
+    }
+  }
+}
+
+function _makeRemainingPossibilities (cells) {
+  const validCounts = []
+  const output = []
+  for (let cellIndex = 0; cellIndex < 81; cellIndex++) {
+    if (cells[cellIndex]) {
+      output[cellIndex] = null
+      continue
+    }
+    validCounts[cellIndex] = 9
+    output[cellIndex] = Array.from({length: 9}, () => 1)
+    for (let relateIndex of RELATEDS[cellIndex]) {
+      const val = cells[relateIndex]
+      if (val && output[cellIndex][val - 1]) {
+        output[cellIndex][val - 1] = 0
+        if (--validCounts[cellIndex] === 1) {
+          cells[cellIndex] = output[cellIndex].findIndex(Boolean) + 1
+          output[cellIndex] = null
+          _updateRelatedPossibilities(output, cells, cellIndex, validCounts)
+          break
+        }
+      }
+    }
   }
   return output
 }
@@ -160,16 +190,21 @@ function _makeAffectedCells (i) {
   return output
 }
 function _makeRelatedCells (i) {
-  const output = []
+  const houses = _makeHouses(i)
+  return Array.from(new Set(Array.prototype.concat.apply([], houses)))
+}
+function _makeHouses (i) {
+  // [row, col, box]
+  const output = [[], [], []]
   const {col, row, box} = _indexToCoord(i)
   for (let curI = row * 9; curI < i + 9 - col; curI++) {
-    output.push(curI)
+    output[0].push(curI)
   }
-  BOXES_INDEXES[box].forEach(curI => output.push(curI))
   for (let curI = col; curI < 81; curI += 9) {
-    output.push(curI)
+    output[1].push(curI)
   }
-  return Array.from(new Set(output.filter(n => n!== i)))
+  BOXES_INDEXES[box].forEach(curI => output[2].push(curI))
+  return output
 }
 // </FACTORY>
 
