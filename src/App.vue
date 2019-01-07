@@ -315,6 +315,7 @@ export default {
       this.noting = !this.noting
       if (!this.noting) {
         this.multiple = false
+        this.actives = Array.from({length: 81}, () => false)
       }
     },
     toggleMultiple () {

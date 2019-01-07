@@ -53,16 +53,13 @@ function generate () {
 function _trimAnswer (initAnswer) {
   const positions = _shuffle(Array.from({length: 81}, (x, i) => i))
   const answer = [...initAnswer]
-  let left = 81
   _trim()
   function _trim (pos = 0) {
-    if (pos === 81 || left < 22) return
+    if (pos === 81) return
     const cellIndex = positions[pos]
     const val = answer.splice(cellIndex, 1, '')[0]
     if (!_hasUniqueSolution(answer)) {
       answer.splice(cellIndex, 1, val)
-    } else {
-      left--
     }
     _trim(pos + 1)
   }
@@ -71,49 +68,43 @@ function _trimAnswer (initAnswer) {
 }
 
 function _hasUniqueSolution (initCells) {
-  const cells = [...initCells]
-  const possibilities = _makeRemainingPossibilities(cells)
-  let solutionsCount = 0
-  _findSolutions()
-  return solutionsCount === 1
-  function _findSolutions (index = 0) {
-    if (index === 81) return ++solutionsCount
-    if (!possibilities[index]) return _findSolutions(index + 1)
-
-    const selected = _getFirstValidPossibility(possibilities[index])
-    if (selected > -1) {
-      _updateAffectedPossibilities(index, selected, -1)
-      _findSolutions(index + 1)
-      if (solutionsCount < 2) {
-        possibilities[index][selected] = 2
-        _updateAffectedPossibilities(index, selected, 1)
-        _findSolutions(index)
-      }
-    } else {
-      possibilities[index].forEach((p, i) => {
-        if (p === 2) possibilities[index][i] = 1
-      })
-    }
-  }
-
-  function _updateAffectedPossibilities (i, number, change = -1) {
-    AFFTECEDS[i].forEach(cellIndex => {
-      if (possibilities[cellIndex]) {
-        possibilities[cellIndex][number] += change
-      }
-    })
-  }
+  return _findSolutions(_makeRemainingPossibilities([...initCells])) === 1
 }
 
-function _updateRelatedPossibilities (possibilities, cells, cellIndex, validCounts) {
-  const i = cells[cellIndex] - 1
-  for (let relateIndex of RELATEDS[cellIndex]) {
-    if (!possibilities[relateIndex] || !possibilities[relateIndex][i]) continue
-    possibilities[relateIndex][i] = 0
-    if (--validCounts[relateIndex] === 1) {
-      cells[relateIndex] = possibilities[relateIndex].findIndex(Boolean) + 1
-      possibilities[relateIndex] = null
-      _updateRelatedPossibilities(possibilities, cells, relateIndex, validCounts)
+function _findSolutions (possibilities, index = 0, solutionsCount = 0) {
+  if (index === 81) return ++solutionsCount
+
+  if (!possibilities[index]) return _findSolutions(possibilities, index + 1, solutionsCount)
+
+  const selected = _getFirstValidPossibility(possibilities[index])
+  if (selected > -1) {
+    _updateAffectedPossibilities(possibilities, index, selected, -1)
+    solutionsCount = _findSolutions(possibilities, index + 1, solutionsCount)
+    if (solutionsCount < 2) {
+      possibilities[index][selected] = 2
+      _updateAffectedPossibilities(possibilities, index, selected, 1)
+      return _findSolutions(possibilities, index, solutionsCount)
+    }
+  } else {
+    possibilities[index].forEach((p, i) => {
+      if (p === 2) possibilities[index][i] = 1
+    })
+  }
+  return solutionsCount
+}
+
+function _updateAffectedPossibilities (possibilities, i, number, change = -1) {
+  AFFTECEDS[i].forEach(cellIndex => {
+    if (possibilities[cellIndex]) {
+      possibilities[cellIndex][number] += change
+    }
+  })
+}
+
+function _getFirstValidPossibility (possibilities) {
+  for (let i = 0; i < 9; i++) {
+    if (possibilities[i] === 1) {
+      return i
     }
   }
 }
@@ -135,7 +126,7 @@ function _makeRemainingPossibilities (cells) {
         if (--validCounts[cellIndex] === 1) {
           cells[cellIndex] = output[cellIndex].findIndex(Boolean) + 1
           output[cellIndex] = null
-          _updateRelatedPossibilities(output, cells, cellIndex, validCounts)
+          _updateNakedSingle(output, cells, cellIndex, validCounts)
           break
         }
       }
@@ -144,10 +135,15 @@ function _makeRemainingPossibilities (cells) {
   return output
 }
 
-function _getFirstValidPossibility (possibilities) {
-  for (let i = 0; i < 9; i++) {
-    if (possibilities[i] === 1) {
-      return i
+function _updateNakedSingle (possibilities, cells, cellIndex, validCounts) {
+  const i = cells[cellIndex] - 1
+  for (let relateIndex of RELATEDS[cellIndex]) {
+    if (!possibilities[relateIndex] || !possibilities[relateIndex][i]) continue
+    possibilities[relateIndex][i] = 0
+    if (--validCounts[relateIndex] === 1) {
+      cells[relateIndex] = possibilities[relateIndex].findIndex(Boolean) + 1
+      possibilities[relateIndex] = null
+      _updateNakedSingle(possibilities, cells, relateIndex, validCounts)
     }
   }
 }
