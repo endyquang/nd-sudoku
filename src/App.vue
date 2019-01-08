@@ -5,7 +5,7 @@
         NUDOKU
       </div>
       <template v-if="won">
-        <div class="pending__noti" v-if="won">YOU'VE LUCKYLY WON!</div>
+        <div class="pending__noti" v-if="won">YOU'VE LUCKILY WON!</div>
       </template>
       <div class="pending__noti" v-else-if="lost">YOU DUMBASS LOSER!</div>
       <div class="pending__subtitle" v-else>Just a dummy text to make it look not as empty as its creator</div>
@@ -90,6 +90,11 @@
         >{{n}}</div>
       </div>
     </main>
+    <footer class="footer">
+      <a href="https://github.com/endyquang/nudoku" target="_blank">
+        <img src="/github.png" />
+      </a>
+    </footer>
   </div>
 </template>
 

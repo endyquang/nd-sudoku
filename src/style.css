@@ -8,6 +8,10 @@ body, html {
   max-height: 100%;
   overflow: hidden;
 }
+#app {
+  display: flex;
+  flex-direction: column;
+}
 @media (max-width: 767px) and (orientation: landscape) {
   html {
     transform: rotate(-90deg);
@@ -76,6 +80,18 @@ button:focus {
 }
 .main {
   position: relative;
+  flex-grow: 1;
+}
+.footer {
+  padding: 12px;
+  text-align: center;
+}
+.footer a img {
+  opacity: .5;
+  height: 24px;
+}
+.footer a:hover img {
+  opacity: .8;
 }
 
 /* ORGANISMS MAIN PLAY */
@@ -152,13 +168,13 @@ button:focus {
   cursor: pointer;
 }
 .play__cell__fixed {
-  color: #2a2a2a;
+  color: #2a2d34;
 }
 .play__cell__temp {
-  color: #373fb2;
+  color: #bfdbff;
 }
 .play__cell__temp.wrong {
-  color: #d83737;
+  color: #dc2029;
 }
 .play__cell__fixed, .play__cell__temp {
   display: flex;
@@ -173,10 +189,10 @@ button:focus {
   background: #b4ed9e;
 }
 .play__cell.affected {
-  background: #f3f3f3;
+  background: #e2e6ef;
 }
 .play__cell.same {
-  background: #ddd;
+  background: #cdd0df;
 }
 .play__cell.active {
   background: #b8daee;
