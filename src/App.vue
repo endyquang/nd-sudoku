@@ -186,7 +186,7 @@ export default {
       this.stopTimer()
       const {answer, trimmedAnswer} = SUDOKU.generate('hardest')
       this.active = -1
-      this.actives = Array.from({length: 81}, () => false)
+      this.resetActives()
       this.answer = answer
       this.boxes = this.makeBoxes(trimmedAnswer)
       this.corrects = trimmedAnswer.filter(Boolean).length
@@ -301,12 +301,16 @@ export default {
         this.temps.splice(i, 1, '')
       }
     },
+    resetActives () {
+      this.actives = Array.from({length: 81}, () => false)
+    },
     getActiveIndexes (callback) {
       if (this.paused) return
       if (this.multiple) {
         this.actives.forEach((active, i) => {
           if (active) callback(i)
         })
+        this.resetActives()
       } else if (this.active.id >= 0 && !this.active.value) {
         return callback(this.active.id)
       }
@@ -315,14 +319,14 @@ export default {
       this.noting = !this.noting
       if (!this.noting) {
         this.multiple = false
-        this.actives = Array.from({length: 81}, () => false)
+        this.resetActives()
       }
     },
     toggleMultiple () {
       this.multiple = !this.multiple
       this.noting = this.multiple
       if (!this.multiple) {
-        this.actives = Array.from({length: 81}, () => false)
+        this.resetActives()
       } else if (this.active.id >= 0 && !this.active.value && !this.temps[this.active.id]) {
         this.actives.splice(this.active.id, 1, true)
         this.active = -1
