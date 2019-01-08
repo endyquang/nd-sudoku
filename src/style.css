@@ -135,13 +135,17 @@ button:focus {
   height: 100%;
   color: #888;
   padding: 1px;
-  font-size: 9px;
-  line-height: 9px;
+  font-size: 10px;
+  line-height: 10px;
 }
 .play__cell__notes__item {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.play__cell__notes__item.same {
+  color: #000;
+  font-weight: 600;
 }
 .play__cell {
   background: #fff;

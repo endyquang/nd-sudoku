@@ -55,7 +55,7 @@
                 class="play__cell__fixed"
               >{{cell.value}}</div>
               <div :data-id="cell.addr" class="play__cell__notes" v-else-if="notesState[cell.id]">
-                <div :data-id="cell.addr" class="play__cell__notes__item" v-for="(note, n) in notes[cell.id]" :key="n">
+                <div :data-id="cell.addr" class="play__cell__notes__item" :class="{'same': n + 1 === temps[active.id]}" v-for="(note, n) in notes[cell.id]" :key="n">
                   {{note > 0 ? note : ''}}
                 </div>
               </div>
