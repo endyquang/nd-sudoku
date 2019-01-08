@@ -92,7 +92,7 @@
     </main>
     <footer class="footer">
       <a href="https://github.com/endyquang/nudoku" target="_blank">
-        <img src="/github.png" />
+        <img src="/nudoku/github.png" />
       </a>
     </footer>
   </div>

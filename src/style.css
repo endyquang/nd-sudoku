@@ -89,6 +89,7 @@ button:focus {
 .footer a img {
   opacity: .5;
   height: 24px;
+  transition: .4s;
 }
 .footer a:hover img {
   opacity: .8;
