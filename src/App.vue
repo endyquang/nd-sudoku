@@ -9,7 +9,14 @@
       </template>
       <div class="pending__noti" v-else-if="lost">YOU DUMBASS LOSER!</div>
       <div class="pending__subtitle" v-else>Just a dummy text to make it look not as empty as its creator</div>
-      <div class="pending__score"></div>
+      <div class="pending__score" v-if="won || lost">
+        <div class="pending__score__title">HIGH SCORES</div>
+        <div v-for="(score, i) in highScores" :key="i" class="pending__score__item">
+          <span>{{score.completedAt}}</span>
+          <span>{{score.time | prettifyTime(false)}}</span>
+        </div>
+      </div>
+      <div v-else />
       <button @click="start" class="pending__start">PLAY {{won || lost ? 'AGAIN' : 'NOW'}}</button>
     </div>
     <header class="header">
@@ -118,6 +125,7 @@ function _initData (getKey = false) {
     boxes: [],
     corrects: 0,
     difficulty: 'hardest',
+    highScores: [],
     histories: [],
     lost: false,
     mistakes: 0,
@@ -196,11 +204,13 @@ export default {
       this.boxes = this.makeBoxes(trimmedAnswer)
       this.corrects = trimmedAnswer.filter(Boolean).length
       this.histories = []
+      this.lost = false
       this.mistakes = 0
       this.multiple = false
       this.notes = Array.from({length: 81}, () => Array.from({length: 9}, () => 0))
       this.paused = false
-      this.pending = false
+      this.pending = true
+      this.won = false
       this.time = 0
       this.timer = null
       this.tempHistory = {notes: [], temps: []}
@@ -351,6 +361,10 @@ export default {
     },
     win () {
       this.won = true
+      const time = this.time
+      this.highScores.push({time, completedAt: new Date().toLocaleDateString('vi')})
+        .sort((a, b) => a.time - b.time)
+        .splice(5)
       this.openPendingWindow()
     },
     openPendingWindow () {
@@ -374,11 +388,11 @@ export default {
     }
   },
   filters: {
-    prettifyTime (seconds = 0) {
+    prettifyTime (seconds = 0, shouldPad = true) {
       if (!(seconds > -1)) return '00:00'
       const to2Letters = n => ('0' + n).slice(-2)
       const [hrs, mins, secs] = _getHms(seconds)
-      return (hrs ? `${to2Letters(hrs)}:` : '') + `${to2Letters(mins)}:${to2Letters(secs)}`
+      return (hrs ? `${to2Letters(hrs)}:` : '') + `${shouldPad ? to2Letters(mins) : mins}:${to2Letters(secs)}`
     }
   }
 }

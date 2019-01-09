@@ -234,11 +234,11 @@ button:focus {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: -5px;
+  right: -5px;
   background: #fdfdfd;
   display: grid;
-  grid-template-rows: repeat(4, 1fr);
+  grid-template-rows: 20% 25% 41% 14%;
   text-align: center;
   align-items: center;
   padding: 8px;
@@ -293,10 +293,51 @@ button:focus {
   letter-spacing: 4px;
   grid-row: 4/5;
   font-weight: 800;
-  margin-bottom: 36px;
 }
 .pending__start:hover {
   color: #fff;
+}
+.pending__score {
+  background: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 10px 2px rgba(0,0,0,.05) inset;
+  min-height: calc(100% - 64px);
+  width: 90%;
+  margin: 32px auto;
+  position: relative;
+  font-size: 18px;
+}
+.pending__score__item {
+  margin-bottom: 8px;
+  padding: 0 8px 4px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  position: relative;
+  z-index: 1;
+  color: #777;
+  letter-spacing: 1px;
+}
+.pending__score__item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.pending__score__title {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  left: 0;
+  align-items: center;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #f3f3f3;
+  justify-content: center;
+  transform: rotate(20deg);
 }
 
 /* ANIMATION */
