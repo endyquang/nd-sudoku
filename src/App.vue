@@ -209,7 +209,7 @@ export default {
       this.multiple = false
       this.notes = Array.from({length: 81}, () => Array.from({length: 9}, () => 0))
       this.paused = false
-      this.pending = true
+      this.pending = false
       this.won = false
       this.time = 0
       this.timer = null
