@@ -162,8 +162,8 @@ button:focus {
 }
 .play__cell__notes__item.same {
   font-weight: 600;
-  background: #999;
-  color: #fff;
+  background: #b2b2b2;
+  color: transparent;
 }
 .play__cell {
   background: #fff;
