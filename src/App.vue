@@ -42,7 +42,7 @@
               :class="[
                 actives[cell.id]
                   ? 'selected'
-                  : active === cell
+                  : active && active.id === cell.id
                     ? 'active'
                     : !multiple && (b === active.box || cell.row === active.row || cell.col === active.col)
                       ? 'affected'
@@ -62,7 +62,7 @@
                 class="play__cell__fixed"
               >{{cell.value}}</div>
               <div :data-id="cell.addr" class="play__cell__notes" v-else-if="notesState[cell.id]">
-                <div :data-id="cell.addr" class="play__cell__notes__item" :class="{'same': n + 1 === temps[active.id]}" v-for="(note, n) in notes[cell.id]" :key="n">
+                <div :data-id="cell.addr" class="play__cell__notes__item" :class="{'same': note > 0 && n + 1 === temps[active.id]}" v-for="(note, n) in notes[cell.id]" :key="n">
                   {{note > 0 ? note : ''}}
                 </div>
               </div>
@@ -74,7 +74,6 @@
               >
                 {{temps[cell.id]}}
               </div>
-              <!-- <div v-else>{{cell}}, {{b}}</div> -->
             </div>
           </template>
         </div>
@@ -91,7 +90,7 @@
         <div
           v-for="n in 9"
           :key="n"
-          @click="newTemp(n)"
+          @click="onNumberClick(n)"
           class="numbers__item"
           :class="{disabled: filledNumbers[n - 1] === 9, primary: noting}"
         >{{n}}</div>
@@ -134,7 +133,7 @@ function _initData (getKey = false) {
     noting: false,
     paused: false,
     pending: true,
-    tempHistory: {},
+    tempHistory: [],
     temps: [],
     time: 0,
     timer: null,
@@ -213,7 +212,7 @@ export default {
       this.won = false
       this.time = 0
       this.timer = null
-      this.tempHistory = {notes: [], temps: []}
+      this.tempHistory = []
       this.temps = trimmedAnswer
       this.startTimer()
     },
@@ -234,38 +233,82 @@ export default {
     },
     pushHistory () {
       // UNDO MAXIMUM 50 TIMES
-      if (!this.tempHistory.notes.length && !this.tempHistory.temps.length) return
+      if (!this.tempHistory.length) return
       this.histories.push(this.tempHistory)
       if (this.histories.length > 50) this.histories.splice(0, 1)
-      this.tempHistory = {notes: [], temps: []}
+      this.tempHistory = []
     },
-    newTemp (value) {
+    onNumberClick (value) {
       this.getActiveIndexes(i => {
         if (this.noting) {
           const numberIndex = value - 1
           const oldVal = this.notes[i][numberIndex]
-          this.tempHistory.notes.push({cellIndex: i, numberIndex, value: oldVal})
+          this.tempHistory.push({type: 'noteItem', cellIndex: i, numberIndex, value: oldVal})
           this.notes[i].splice(numberIndex, 1, oldVal > 0 ? 0 : value)
-          return this.resetTemp(i)
-        }
-
-        this.resetNote(i)
-        if (this.temps[i] === value) {
-          this.resetTemp(i)
+          this.setTemp(i, '')
         } else {
-          this.tempHistory.temps.push({cellIndex: i, value: this.temps[i]})
-          this.temps.splice(i, 1, value)
-          this.clearRelevantNotes(i, value)
-          if (value === this.answer[i]) {
-            if (++this.corrects === 81) this.win()
-          } else if (++this.mistakes === 3) {
-            this.gameOver()
+          if (value !== this.temps[i] && value !== this.answer[i] && ++this.mistakes === 3) {
+            return this.gameOver()
           }
+          this.setTemp(i, value)
         }
       })
       this.pushHistory()
     },
+    erase () {
+      this.getActiveIndexes(i => {
+        this.resetNote(i)
+        this.setTemp(i, '')
+      })
+      this.pushHistory()
+    },
+    undo () {
+      if (this.paused || !this.histories.length) return
+      const lastHistories = this.histories.pop() || []
+      lastHistories.forEach(({cellIndex, numberIndex, value, type}) => {
+        switch (type) {
+          case 'temp':
+            this.setTemp(cellIndex, value)
+            break
+          case 'note':
+            this.notes.splice(cellIndex, 1, value)
+            break
+          case 'noteItem':
+            this.notes[cellIndex].splice(numberIndex, 1, value)
+            break
+        }
+      })
+    },
+    resetNote (i) {
+      if (this.notesState[i]) {
+        this.tempHistory.push({type: 'note', cellIndex: i, value: this.notes[i]})
+        this.notes.splice(i, 1, Array.from({length: 9}, () => 0))
+      }
+    },
+    removeNoteItem (i, number) {
+      if (this.notesState[i]) {
+        const numberIndex = number - 1
+        this.tempHistory.push({type: 'noteItem', cellIndex: i, numberIndex, value: this.notes[i][numberIndex]})
+        this.notes[i].splice(numberIndex, 1, 0)
+      }
+    },
+    setTemp (i, value = '') {
+      const actualValue = value === this.temps[i] ? '' : value
+      if (actualValue) {
+        if (actualValue === this.answer[i] && ++this.corrects === 81) {
+          return this.win()
+        }
+        this.resetNote(i)
+      }
+      if (this.temps[i] === this.answer[i]) {
+        this.corrects--
+      }
+      this.tempHistory.push({type: 'temp', cellIndex: i, value: this.temps[i]})
+      this.temps.splice(i, 1, actualValue)
+      this.clearRelevantNotes(i, actualValue)
+    },
     clearRelevantNotes (cellId, number) {
+      if (!number) return
       const {row, col, box} = SUDOKU.addresses[cellId]
       this.boxes[box].forEach(cell => this.removeNoteItem(cell.id, number))
       this.notes.forEach((note, i) => {
@@ -273,48 +316,6 @@ export default {
           this.removeNoteItem(i, number)
         }
       })
-    },
-    erase () {
-      this.getActiveIndexes(i => {
-        this.resetNote(i)
-        this.resetTemp(i)
-      })
-      this.pushHistory()
-    },
-    undo () {
-      if (this.paused) return
-      const {notes = [], temps = []} = this.histories.pop() || {}
-      notes.forEach(({cellIndex, numberIndex, value}) => {
-        if (numberIndex > -1) {
-          this.notes[cellIndex].splice(numberIndex, 1, value)
-        } else {
-          this.notes.splice(cellIndex, 1, value)
-        }
-      })
-      temps.forEach(({cellIndex, value}) => {
-        this.temps.splice(cellIndex, 1, value)
-      })
-    },
-    resetNote (i) {
-      if (this.notesState[i]) {
-        this.tempHistory.notes.push({cellIndex: i, value: this.notes[i]})
-        this.notes.splice(i, 1, Array.from({length: 9}, () => 0))
-      }
-    },
-    removeNoteItem (i, number) {
-      if (this.notesState[i]) {
-        const numberIndex = number - 1
-        this.tempHistory.notes.push({cellIndex: i, numberIndex, value: this.notes[i][numberIndex]})
-        this.notes[i].splice(numberIndex, 1, 0)
-      }
-    },
-    resetTemp (i) {
-      const value = this.temps[i]
-      if (value) {
-        if (value === this.answer[i]) this.corrects--
-        this.tempHistory.temps.push({cellIndex: i, value})
-        this.temps.splice(i, 1, '')
-      }
     },
     resetActives () {
       this.actives = Array.from({length: 81}, () => false)
@@ -363,8 +364,8 @@ export default {
       this.won = true
       const time = this.time
       this.highScores.push({time, completedAt: new Date().toLocaleDateString('vi')})
-        .sort((a, b) => a.time - b.time)
-        .splice(5)
+      this.highScores.sort((a, b) => a.time - b.time)
+      this.highScores.splice(5)
       this.openPendingWindow()
     },
     openPendingWindow () {

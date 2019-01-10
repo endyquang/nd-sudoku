@@ -161,8 +161,9 @@ button:focus {
   align-items: center;
 }
 .play__cell__notes__item.same {
-  color: #000;
   font-weight: 600;
+  background: #999;
+  color: #fff;
 }
 .play__cell {
   background: #fff;
@@ -186,13 +187,10 @@ button:focus {
   line-height: 30px;
   font-weight: 400;
 }
-.play--noting .play__cell.active, .play--noting .play__cell.same {
-  background: #b4ed9e;
-}
 .play__cell.affected {
   background: #e2e6ef;
 }
-.play__cell.same {
+.play__cell.same, .play--noting .play__cell.active {
   background: #cdd0df;
 }
 .play__cell.active {
