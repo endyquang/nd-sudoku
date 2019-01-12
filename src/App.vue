@@ -112,16 +112,19 @@
 <script>
 import SUDOKU from './sudoku'
 import utils from './utils'
-import Sound from './sound'
 
 const publicPath = process.env.BASE_URL
 
+function _makeSound (src) {
+  return new Audio(publicPath + src)
+}
+
 const sounds = {
-  temp: new Sound(publicPath + 'sfx/temp.mp3'),
-  tap: new Sound(publicPath + 'sfx/tap.mp3'),
-  note: new Sound(publicPath + 'sfx/note.mp3'),
-  tool: new Sound(publicPath + 'sfx/tool.mp3'),
-  play: new Sound(publicPath + 'sfx/play.mp3')
+  temp: _makeSound('sfx/temp.mp3'),
+  tap: _makeSound('sfx/tap.mp3'),
+  note: _makeSound('sfx/note.mp3'),
+  tool: _makeSound('sfx/tool.mp3'),
+  play: _makeSound('sfx/play.mp3')
 }
 
 function _initData (getKey = false) {
