@@ -10,8 +10,8 @@ module.exports = {
         cacheId: 'blabla',
         filepath: 'docs/service-worker.js',
         staticFileGlobs: [
-          'docs/*.{js,html,json,ico,png}',
-          'docs/**/*.{js,css}'
+          'docs/*.*',
+          'docs/**/*.*'
         ],
         stripPrefix: 'docs/'
       })

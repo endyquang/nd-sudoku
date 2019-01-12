@@ -3,12 +3,12 @@
   "description": "A tailor made sudoku game for experiment",
   "icons": [
     {
-      "src": "/nudoku/ico_sm.svg",
+      "src": "/nudoku/img/ico_sm.svg",
       "type": "image/svg+xml",
       "sizes": "192x192"
     },
     {
-      "src": "/nudoku/ico.svg",
+      "src": "/nudoku/img/ico.svg",
       "type": "image/svg+xml",
       "sizes": "512x512"
     }

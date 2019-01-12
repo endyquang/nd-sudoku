@@ -37,7 +37,7 @@
 /* eslint-disable indent, no-unused-vars, no-multiple-empty-lines, max-nested-callbacks, space-before-function-paren, quotes, comma-spacing */
 'use strict';
 
-var precacheConfig = [["css/app.2f5e06a8.css","14a0e6efe0bd1f9d82aee5996ef09695"],["favicon.ico","657800290452f3daaa47d1145421f0d8"],["github.png","f87561b8bb354ef83b09a66e54f70e08"],["index.html","8e8fc4f8836343f76b0f2696ee7a103d"],["js/app.23777143.js","1c21df458e60038a099ba96144681c5b"],["js/chunk-vendors.4d2394c0.js","75e07f292fa274c5a2bd4b68244ef68a"],["manifest.json","b61891753ebb6a4c8f5cf571009bfcf1"]];
+var precacheConfig = [["css/app.faa15eba.css","c6999bfefa24757ad7d1c06595454be6"],["img/favicon.ico","657800290452f3daaa47d1145421f0d8"],["img/github.png","f87561b8bb354ef83b09a66e54f70e08"],["img/ico.svg","3ef9c23b818e1ffcd8da58cc99f4c7be"],["img/ico_sm.svg","3d607c1b7cbc18d27958535dfd7872c2"],["index.html","0825bd98b3d8be8555b1bb9ce7d8ff84"],["js/app.18c14013.js","c43ec9ac416a0ef9ee80a5d4ae4b886a"],["js/chunk-vendors.4d2394c0.js","75e07f292fa274c5a2bd4b68244ef68a"],["manifest.json","bf48ba183793a681b75e99249ff860ab"],["sfx/note.mp3","e81549b241ff9ba4c51b6a6a8cb3911e"],["sfx/play.mp3","d02dc9161aaa3d1f94761acfd84b0ca8"],["sfx/tap.mp3","879a2bb182e00d093e6add3ef3ce4ae7"],["sfx/temp.mp3","be6a90d6943a0639d707e649bfa7a56c"],["sfx/tool.mp3","3dfc9042451d0ae0a89a3f8a5d0d99bd"]];
 var cacheName = 'sw-precache-v3-blabla-' + (self.registration ? self.registration.scope : '');
 
 

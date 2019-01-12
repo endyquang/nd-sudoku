@@ -24,7 +24,10 @@
       <button @click="togglePaused">
         {{time | prettifyTime}} <i class="header__btn__icon" :class="[paused ? 'ico__pause' : 'ico__play']" />
       </button>
-      <button @click="start">New Game</button>
+      <div>
+        <button @click="toggleMute" class="mute-btn">{{mute ? '&#x1F507;' : '&#x1F50A;'}}</button>
+        <button @click="start">New Game</button>
+      </div>
     </header>
     <main class="main">
       <div class="paused" v-if="paused">
@@ -98,7 +101,7 @@
     </main>
     <footer class="footer">
       <a href="https://github.com/endyquang/nudoku" target="_blank">
-        <img src="/nudoku/github.png" />
+        <img :src="`${publicPath}img/github.png`" />
       </a>
     </footer>
   </div>
@@ -106,14 +109,17 @@
 
 <script>
 import SUDOKU from './sudoku'
+import utils from './utils'
+import Sound from './sound'
 
-function _getHms (seconds = 0) {
-  const secsPerHr = 60 * 60
-  const secsPerMin = 60
-  const hrs = Math.floor(seconds / secsPerHr)
-  const mins = Math.floor((seconds - hrs * secsPerHr) / secsPerMin)
-  const secs = Math.floor(seconds - hrs * secsPerHr - mins * secsPerMin)
-  return [hrs, mins, secs]
+const publicPath = process.env.BASE_URL
+
+const sounds = {
+  temp: new Sound(publicPath + 'sfx/temp.mp3'),
+  tap: new Sound(publicPath + 'sfx/tap.mp3'),
+  note: new Sound(publicPath + 'sfx/note.mp3'),
+  tool: new Sound(publicPath + 'sfx/tool.mp3'),
+  play: new Sound(publicPath + 'sfx/play.mp3')
 }
 
 function _initData (getKey = false) {
@@ -128,11 +134,13 @@ function _initData (getKey = false) {
     histories: [],
     lost: false,
     mistakes: 0,
+    mute: false,
     multiple: false,
     notes: [],
     noting: false,
     paused: false,
     pending: true,
+    publicPath: process.env.BASE_URL,
     tempHistory: [],
     temps: [],
     time: 0,
@@ -195,6 +203,7 @@ export default {
   },
   methods: {
     start () {
+      this.playSound('play')
       this.stopTimer()
       const {answer, trimmedAnswer} = SUDOKU.generate('hardest')
       this.active = -1
@@ -241,12 +250,14 @@ export default {
     onNumberClick (value) {
       this.getActiveIndexes(i => {
         if (this.noting) {
+          this.playSound('note')
           const numberIndex = value - 1
           const oldVal = this.notes[i][numberIndex]
           this.tempHistory.push({type: 'noteItem', cellIndex: i, numberIndex, value: oldVal})
           this.notes[i].splice(numberIndex, 1, oldVal > 0 ? 0 : value)
           this.setTemp(i, '')
         } else {
+          this.playSound('temp')
           if (value !== this.temps[i] && value !== this.answer[i] && ++this.mistakes === 3) {
             return this.gameOver()
           }
@@ -256,6 +267,7 @@ export default {
       this.pushHistory()
     },
     erase () {
+      this.playSound('tool')
       this.getActiveIndexes(i => {
         this.resetNote(i)
         this.setTemp(i, '')
@@ -264,6 +276,7 @@ export default {
     },
     undo () {
       if (this.paused || !this.histories.length) return
+      this.playSound('tool')
       const lastHistories = this.histories.pop() || []
       lastHistories.forEach(({cellIndex, numberIndex, value, type}) => {
         switch (type) {
@@ -332,6 +345,7 @@ export default {
       }
     },
     toggleNoting () {
+      this.playSound('tool')
       this.noting = !this.noting
       if (!this.noting) {
         this.multiple = false
@@ -339,6 +353,7 @@ export default {
       }
     },
     toggleMultiple () {
+      this.playSound('tool')
       this.multiple = !this.multiple
       this.noting = this.multiple
       if (!this.multiple) {
@@ -348,8 +363,16 @@ export default {
         this.active = -1
       }
     },
+    toggleMute () {
+      this.mute = !this.mute
+      this.playSound('tool')
+    },
+    playSound (soundName) {
+      if (!this.mute && sounds[soundName]) sounds[soundName].play()
+    },
     onActiveChange (cell, e) {
       if (!cell || cell === this.active) return
+      this.playSound('tap')
       if (this.multiple && !cell.value && !this.temps[cell.id]) {
         this.actives.splice(cell.id, 1, !this.actives[cell.id])
       } else {
@@ -373,6 +396,7 @@ export default {
       this.stopTimer()
     },
     togglePaused () {
+      this.playSound('play')
       this.paused = !this.paused
       if (this.paused) this.stopTimer()
       else this.startTimer()
@@ -392,7 +416,7 @@ export default {
     prettifyTime (seconds = 0, shouldPad = true) {
       if (!(seconds > -1)) return '00:00'
       const to2Letters = n => ('0' + n).slice(-2)
-      const [hrs, mins, secs] = _getHms(seconds)
+      const [hrs, mins, secs] = utils.getHms(seconds)
       return (hrs ? `${to2Letters(hrs)}:` : '') + `${shouldPad ? to2Letters(mins) : mins}:${to2Letters(secs)}`
     }
   }
