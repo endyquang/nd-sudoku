@@ -72,6 +72,7 @@ button:focus {
 .header .mute-btn {
   margin-right: 10px;
   font-size: 16px;
+  width: 16px;
 }
 .header .header__btn__icon {
   position: absolute;
@@ -401,4 +402,39 @@ button.primary {
   border-style: double;
   border-width: 0px 0 0px 8px;
 }
-
+.ico__mute, .ico__unmute {
+  display: block;
+  width: 6px;
+  height: 6px;
+  background: #aaa;
+  position: relative;
+}
+.ico__mute::after, .ico__unmute::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent #aaa transparent transparent;
+  border-width: 6px 10px 6px 10px;
+  left: -10px;
+  top: -3px;
+}
+.ico__mute::before, .ico__unmute::before {
+  transform: rotate(45deg);
+  border-radius: 0 50px 0 0;
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-style: double;
+  border-color: #aaa;
+  border-width: 4px 4px 0 0;
+  left: 11px;
+  top: -1px;
+  transition: all 0.2s ease-out;
+}
+.ico__mute::before {
+  transform: scale(.5) translate(-15px, 0) rotate(36deg);
+  opacity: 0;
+}

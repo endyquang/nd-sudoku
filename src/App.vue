@@ -24,8 +24,10 @@
       <button @click="togglePaused">
         {{time | prettifyTime}} <i class="header__btn__icon" :class="[paused ? 'ico__pause' : 'ico__play']" />
       </button>
-      <div>
-        <button @click="toggleMute" class="mute-btn">{{mute ? '&#x1F507;' : '&#x1F50A;'}}</button>
+      <div style="display: flex;">
+        <button @click="toggleMute" class="mute-btn">
+          <i :class="[mute ? 'ico__mute' : 'ico__unmute']" />
+        </button>
         <button @click="start">New Game</button>
       </div>
     </header>
