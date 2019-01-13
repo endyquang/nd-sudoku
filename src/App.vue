@@ -19,7 +19,7 @@
       <div v-else />
       <button @click="start" class="pending__start">PLAY {{won || lost ? 'AGAIN' : 'NOW'}}</button>
     </div>
-    <header class="header">
+    <header id="header" class="header">
       <span>Mistakes: {{mistakes}}/3</span>
       <button @click="togglePaused">
         {{time | prettifyTime}} <i class="header__btn__icon" :class="[paused ? 'ico__pause' : 'ico__play']" />
@@ -32,12 +32,7 @@
       </div>
     </header>
     <main class="main">
-      <div class="paused" v-if="paused">
-        <div class="paused__content">
-          <button @click="togglePaused"><i class="ico__play ico--xl" /></button>
-        </div>
-      </div>
-      <div class="play" :class="{'play--paused': paused, 'play--noting': noting}">
+      <div id="play" class="play" :class="{'play--paused': paused, 'play--noting': noting}">
         <div class="play__box" v-for="(box, b) in boxes" :key="`b-${b}`" @touchmove="onTouchMove">
           <template v-for="cell in box">
             <div class="play__cell" v-if="paused" :key="cell.id" />
@@ -82,16 +77,21 @@
             </div>
           </template>
         </div>
+        <div class="paused" v-if="paused">
+          <div class="paused__content">
+            <button @click="togglePaused"><i class="ico__play ico--xl" /></button>
+          </div>
+        </div>
       </div>
 
-      <div class="controls">
+      <div id="controls" class="controls">
         <button @click="toggleNoting" :class="{'primary': noting}"><div>&#9998;</div> Note</button>
         <button @click="undo"><div>&#x21BA;</div> Undo</button>
         <button @click="erase"><div>&#10008;</div> Erase</button>
         <button @click="toggleMultiple" :class="{'primary': multiple}"><div>&#9783;</div> Multiple</button>
       </div>
 
-      <div class="number">
+      <div id="number" class="number">
         <div
           v-for="n in 9"
           :key="n"
@@ -101,7 +101,7 @@
         >{{n}}</div>
       </div>
     </main>
-    <footer class="footer">
+    <footer id="footer" class="footer">
       <a href="https://github.com/endyquang/nudoku" target="_blank">
         <img :src="`${publicPath}img/github.png`" />
       </a>
@@ -186,6 +186,27 @@ export default {
   watch: _makeWatcher(),
   mounted () {
     this.startTimer()
+    const ids = ['header', 'play', 'controls', 'number', 'footer']
+    const els = {}
+    const heights = {}
+    ids.forEach(id => {
+      const el = document.querySelector('#' + id) || null
+      if (!el) return
+      els[id] = el
+      heights[id] = el.offsetHeight
+    })
+    window.onresize = () => {
+      let temp = 0
+      const innerHeight = window.innerHeight
+      for (let key in els) {
+        temp += heights[key]
+        if (temp > innerHeight) {
+          els[key].style.display = 'none'
+        } else {
+          els[key].style = {}
+        }
+      }
+    }
   },
   computed: {
     notesState () {
@@ -374,8 +395,13 @@ export default {
     },
     playSound (soundName) {
       if (!this.mute && sounds[soundName]) {
-        sounds[soundName].load()
-        sounds[soundName].play()
+        const sound = sounds[soundName]
+        if (!sound.paused && !sound.ended && sound.currentTime && sound.readyState > 2) {
+          sound.currentTime = 0
+        } else {
+          sound.load()
+          sound.play()
+        }
       }
     },
     onActiveChange (cell, e) {

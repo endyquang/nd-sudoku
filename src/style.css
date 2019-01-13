@@ -80,10 +80,17 @@ button:focus {
   right: -16px;
   border-color: transparent transparent transparent #aaa;
 }
+.header .header__btn__icon:before {
+  position: absolute;
+  content: "";
+  display: block;
+  width: 4px;
+  left: -13px;
+  top: -6px;
+  height: 12px;
+}
 .header {
   padding: 6px 2px;
-  height: 44px;
-  min-height: 44px;
 }
 .main {
   position: relative;
@@ -91,7 +98,6 @@ button:focus {
 }
 .footer {
   padding: 8px 12px;
-  height: 45px;
   text-align: center;
 }
 .footer a img {
@@ -109,11 +115,6 @@ button:focus {
   grid-gap: 2px;
   background-color: #777;
   position: relative;
-  margin: 0 auto;
-  width: calc(100vh - 223px);
-  height: calc(100vh - 223px);
-  max-width: 100%;
-  max-height: calc(100vw - 12px);
 }
 .paused {
   position: absolute;
@@ -126,8 +127,8 @@ button:focus {
   border-radius: 50%;
   border: 1px solid #777;
   background: #fff;
-  height: 100px;
-  width: 100px;
+  height: 26%;
+  width: 26%;
   text-align: center;
   font-size: 44px;
   padding: 0 0 4px 8px;
@@ -211,33 +212,6 @@ button:focus {
 }
 .play__cell.selected {
   background: #eee;
-}
-.number {
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  color: #373fb2;
-  font-size: 34px;
-}
-.numbers__item.disabled {
-  opacity: .5;
-  pointer-events: none;
-  cursor: default;
-}
-.numbers__item {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: .2s;
-}
-.numbers__item:nth-child(even) {
-  margin-top: 24px;
-}
-.numbers__item:nth-child(odd) {
-  margin-bottom: 24px;
-}
-.numbers__item:active {
-  transform: translateY(4px);
 }
 
 .pending {
@@ -368,7 +342,6 @@ button:focus {
 /* CONTROLS */
 .controls {
   padding: 8px 0;
-  height: 69px;
   grid-template-columns: repeat(4, 1fr);
 }
 .controls button {
@@ -384,6 +357,33 @@ button.primary {
 }
 
 /* NUMBERS */
+.number {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  color: #373fb2;
+  font-size: 34px;
+}
+.numbers__item.disabled {
+  opacity: .5;
+  pointer-events: none;
+  cursor: default;
+}
+.numbers__item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: .2s;
+}
+.numbers__item:nth-child(even) {
+  margin-top: 24px;
+}
+.numbers__item:nth-child(odd) {
+  margin-bottom: 24px;
+}
+.numbers__item:active {
+  transform: translateY(4px);
+}
 .number .primary {
   color: #2b9c48;
 }
