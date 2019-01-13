@@ -195,9 +195,9 @@ export default {
       els[id] = el
       heights[id] = el.offsetHeight
     })
-    window.onresize = () => {
+    function _updateDisplay () {
       let temp = 0
-      const innerHeight = window.innerHeight
+      const innerHeight =  Math[window.innerWidth > 768 ? 'min' : 'max'](window.innerHeight, window.innerWidth)
       for (let key in els) {
         temp += heights[key]
         if (temp > innerHeight) {
@@ -207,6 +207,8 @@ export default {
         }
       }
     }
+    _updateDisplay()
+    window.onresize = _updateDisplay
   },
   computed: {
     notesState () {
