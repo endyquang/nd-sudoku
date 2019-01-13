@@ -24,7 +24,7 @@ body, html {
     left: 0;
   }
 }
-div, .main, .header, table, tr, td {
+div, .main, .header, table, button, tr, td {
   box-sizing: border-box;
 }
 button {
@@ -81,14 +81,17 @@ button:focus {
   border-color: transparent transparent transparent #aaa;
 }
 .header {
-  padding: 8px 2px;
+  padding: 6px 2px;
+  height: 44px;
+  min-height: 44px;
 }
 .main {
   position: relative;
   flex-grow: 1;
 }
 .footer {
-  padding: 12px;
+  padding: 8px 12px;
+  height: 45px;
   text-align: center;
 }
 .footer a img {
@@ -106,6 +109,11 @@ button:focus {
   grid-gap: 2px;
   background-color: #777;
   position: relative;
+  margin: 0 auto;
+  width: calc(100vh - 223px);
+  height: calc(100vh - 223px);
+  max-width: 100%;
+  max-height: calc(100vw - 12px);
 }
 .paused {
   position: absolute;
@@ -359,7 +367,8 @@ button:focus {
 
 /* CONTROLS */
 .controls {
-  margin: 12px 0;
+  padding: 8px 0;
+  height: 69px;
   grid-template-columns: repeat(4, 1fr);
 }
 .controls button {
@@ -430,7 +439,7 @@ button.primary {
   border-style: double;
   border-color: #aaa;
   border-width: 4px 4px 0 0;
-  left: 11px;
+  left: 10px;
   top: -1px;
   transition: all 0.2s ease-out;
 }

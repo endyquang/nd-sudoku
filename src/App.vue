@@ -373,7 +373,10 @@ export default {
       this.playSound('tool')
     },
     playSound (soundName) {
-      if (!this.mute && sounds[soundName]) sounds[soundName].play()
+      if (!this.mute && sounds[soundName]) {
+        sounds[soundName].load()
+        sounds[soundName].play()
+      }
     },
     onActiveChange (cell, e) {
       if (!cell || cell === this.active) return
